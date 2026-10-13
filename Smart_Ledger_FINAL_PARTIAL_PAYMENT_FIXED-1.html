@@ -1,0 +1,2246 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Smart Ledger 1.0</title>
+<style>
+*{box-sizing:border-box}body{font-family:Arial,"Noto Sans Bengali",sans-serif;margin:0;background:#f4f6f8;color:#222}
+header{background:#173f5f;color:white;padding:16px;text-align:center}header h1{margin:0;font-size:24px}
+nav{display:flex;flex-wrap:wrap;gap:7px;padding:10px;background:white;position:sticky;top:0;z-index:5;box-shadow:0 2px 5px #ddd}
+button{border:0;border-radius:7px;padding:9px 13px;background:#173f5f;color:white;cursor:pointer}button.secondary{background:#607d8b}button.danger{background:#c62828}button.green{background:#2e7d32}
+main{max-width:1100px;margin:auto;padding:15px}.page{display:none}.page.active{display:block}
+.card{background:white;border-radius:10px;padding:15px;margin-bottom:15px;box-shadow:0 2px 8px #ddd}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}
+label{font-weight:bold;font-size:14px}input,select,textarea{width:100%;padding:10px;border:1px solid #ccc;border-radius:6px;margin-top:5px;font-size:15px}
+table{width:100%;border-collapse:collapse;margin-top:10px;background:white} .card table{display:table}.card{overflow:hidden} .table-scroll{overflow-x:auto;width:100%;-webkit-overflow-scrolling:touch}th,td{border:1px solid #ddd;padding:8px;text-align:left;font-size:14px}th{background:#eef3f7}
+.stat{padding:14px;border-radius:10px;background:white;box-shadow:0 2px 6px #ddd}.stat b{font-size:20px;display:block;margin-top:5px}
+.low{background:#fff0f0!important}.muted{color:#777}.right{text-align:right}.total{font-size:20px;font-weight:bold}
+.invoice-head{display:flex;justify-content:space-between;gap:15px;flex-wrap:wrap}.invoice-title{font-size:22px;font-weight:bold}
+@media(max-width:600px){table{font-size:12px}th,td{padding:6px}button{padding:8px 10px}}
+@media print{nav,.no-print,header{display:none!important}body{background:white}.page{display:none}.page#invoicePage{display:block}.card{box-shadow:none}}
+
+.daily-btn{font-weight:700;border:2px solid #f0b400!important;background:#0b4f71!important}
+@media(max-width:600px){nav button{font-size:15px;padding:10px 14px}.daily-btn{order:-1}}
+.menu-edit-btn{background:#6a1b9a!important}.menu-custom-btn{background:#2e7d32!important}.menu-edit-btn:hover,.menu-custom-btn:hover{transform:translateY(-1px);filter:brightness(1.08)}#customMenuButtons{display:contents}#customMenuList table{width:100%;border-collapse:collapse}#customMenuList th,#customMenuList td{padding:8px;border-bottom:1px solid #ddd;text-align:left}@media(max-width:600px){#customMenuList{overflow-x:auto}.menu-edit-btn{order:-1}}
+
+.v19-btn{background:#8e24aa!important;font-weight:700}.v19-btn:hover{filter:brightness(1.08);transform:translateY(-1px)}.v19-safe{border-left:5px solid #2e7d32}.v19-warn{border-left:5px solid #f9a825}.v19-badge{display:inline-block;padding:5px 9px;border-radius:999px;background:#e8f5e9;color:#2e7d32;font-weight:700;font-size:13px}.v19-muted{color:#666;font-size:13px}
+</style>
+<style>
+#loginScreen{position:fixed;inset:0;background:#f5f7fa;z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px}
+.login-box{width:min(420px,100%);background:#fff;border-radius:16px;padding:28px;box-shadow:0 8px 30px rgba(0,0,0,.12)}
+.remember-row{display:flex;align-items:center;gap:8px;margin:12px 0 4px;font-size:15px;cursor:pointer}.remember-row input{width:18px;height:18px;accent-color:#198754}
+.login-box h1{margin-top:0;text-align:center}.login-box .logo{font-size:48px;text-align:center}
+.user-badge{display:inline-block;padding:5px 10px;border-radius:15px;background:#eef3f7;font-size:13px}
+.top-user{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.security-note{font-size:13px;color:#666}
+</style>
+
+<style>
+.table-wrap{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:8px}
+.table-wrap table{min-width:650px}
+.form-note{font-size:13px;color:#666;margin-top:5px}
+.badge{display:inline-block;padding:4px 8px;border-radius:20px;background:#eef3f7}
+</style>
+
+
+<style>
+/* ===== Smart Ledger V16: Professional UI + Animation ===== */
+:root{--sl-primary:#173f5f;--sl-accent:#0b6e99;--sl-soft:#eef5f9}
+body{animation:v16BodyIn .45s ease both}
+@keyframes v16BodyIn{from{opacity:0}to{opacity:1}}
+.v16-header{background:linear-gradient(135deg,#173f5f,#0b5b7a);padding:18px 15px;box-shadow:0 4px 14px rgba(0,0,0,.16)}
+.v16-brand{display:flex;align-items:center;justify-content:center;gap:12px}.v16-brand h1{margin:0;font-size:27px}.v16-logo-wrap{width:62px;height:62px;border-radius:16px;background:white;display:flex;align-items:center;justify-content:center;overflow:hidden;box-shadow:0 4px 14px rgba(0,0,0,.18);flex:0 0 auto}.v16-header-logo{width:100%;height:100%;object-fit:contain;display:none}.v16-logo-wrap span{font-size:36px}
+nav{backdrop-filter:blur(8px)}nav button{transition:transform .16s ease,box-shadow .16s ease,background .16s ease}nav button:hover{transform:translateY(-2px);box-shadow:0 5px 12px rgba(23,63,95,.18)}nav button:active{transform:scale(.96)}
+.page.active{animation:v16PageIn .28s ease both}@keyframes v16PageIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.card,.stat{transition:transform .2s ease,box-shadow .2s ease}.card:hover{box-shadow:0 5px 16px rgba(0,0,0,.09)}.stat:hover{transform:translateY(-3px)}
+.stat b{animation:v16StatIn .35s ease both}@keyframes v16StatIn{from{opacity:.2;transform:scale(.96)}to{opacity:1;transform:scale(1)}}
+.v16-logo-card{margin-top:14px;padding:14px;border:1px dashed #aab8c2;border-radius:12px;background:var(--sl-soft)}.v16-logo-preview-wrap{min-height:115px;margin:10px 0;padding:10px;border-radius:10px;background:#fff;border:1px solid #ddd;display:flex;align-items:center;justify-content:center;gap:8px}.v16-logo-preview{max-width:220px;max-height:105px;object-fit:contain;display:none}.v16-preview-logo{max-width:160px;max-height:80px;object-fit:contain;display:none;margin-bottom:8px}.v16-invoice-brand{display:flex;align-items:center;gap:12px}.v16-invoice-logo{max-width:75px;max-height:75px;object-fit:contain;display:none}.v16-save-flash{animation:v16Flash .65s ease}@keyframes v16Flash{0%{box-shadow:0 0 0 0 rgba(46,125,50,.45)}100%{box-shadow:0 0 0 14px rgba(46,125,50,0)}}
+@media(max-width:600px){.v16-brand h1{font-size:23px}.v16-logo-wrap{width:54px;height:54px}.v16-logo-wrap span{font-size:30px}.v16-invoice-logo{max-width:58px;max-height:58px}}
+</style>
+
+<style id="v17-style">
+.v17-btn{background:#0f766e!important;color:#fff!important;border:2px solid #f4c542!important;font-weight:700!important}
+.v17-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+.v17-stat{background:#fff;border-radius:16px;padding:16px;box-shadow:0 4px 18px rgba(0,0,0,.08);transition:.25s}
+.v17-stat:hover{transform:translateY(-3px)}
+.v17-stat b{display:block;font-size:24px;margin-top:6px}
+.v17-alert{border-left:5px solid #dc2626;padding:10px 12px;background:#fff1f2;border-radius:10px;margin:7px 0}
+.v17-warn{border-left:5px solid #d97706;padding:10px 12px;background:#fffbeb;border-radius:10px;margin:7px 0}
+.v17-ok{border-left:5px solid #16a34a;padding:10px 12px;background:#f0fdf4;border-radius:10px;margin:7px 0}
+.v17-actions{display:flex;flex-wrap:wrap;gap:8px}
+@media(max-width:600px){.v17-grid{grid-template-columns:1fr 1fr}.v17-stat b{font-size:20px}}
+</style>
+<style id="v18-style">
+.v18-btn{background:#7c3aed!important;color:#fff!important;border:2px solid #c4b5fd!important;font-weight:700!important}
+.v18-summary{background:#f8fafc;border:1px solid #dbe4ea;border-radius:12px;padding:12px;margin-top:12px}
+.v18-summary-row{display:flex;justify-content:space-between;gap:10px;padding:6px 0;font-size:16px}
+.v18-grand{font-size:22px;font-weight:800;border-top:2px solid #173f5f;padding-top:10px;margin-top:5px}
+.v18-receipt{max-width:760px;margin:auto}
+@media print{body.v18-printing *{visibility:hidden!important}body.v18-printing #v18PrintArea,body.v18-printing #v18PrintArea *{visibility:visible!important}body.v18-printing #v18PrintArea{position:absolute;left:0;top:0;width:100%;background:white;padding:20px}.no-print-v18{display:none!important}}
+</style>
+
+
+<style id="sl-all-menu-final-style">
+/* V20: show every main menu item directly; Dashboard stays first */
+.sl-main-nav{display:flex!important;flex-wrap:wrap!important;align-items:center!important;gap:8px!important;position:sticky!important;top:0!important;overflow:visible!important;background:#fff!important;z-index:100!important;}
+.sl-dashboard-main{order:-100!important;flex:0 0 auto!important;}
+.sl-three-dot{display:none!important;}
+.sl-menu-dropdown{display:flex!important;position:static!important;order:0!important;width:100%!important;max-height:none!important;overflow:visible!important;padding:0!important;background:transparent!important;border:0!important;box-shadow:none!important;flex-wrap:wrap!important;gap:8px!important;animation:none!important;}
+.sl-menu-dropdown>button{flex:0 1 auto!important;min-height:48px!important;margin:0!important;}
+.sl-menu-dropdown #customMenuButtons{display:contents!important;}
+@media(max-width:600px){.sl-main-nav{padding:8px!important;gap:7px!important}.sl-menu-dropdown{gap:7px!important}.sl-menu-dropdown>button{flex:1 1 calc(50% - 7px)!important;font-size:15px!important;min-height:46px!important}.sl-dashboard-main{flex:1 1 calc(100% - 55px)!important}.sl-notify-wrap{right:8px!important;top:8px!important;}}
+</style>
+
+
+<style id="sl-live-datetime-style">
+.sl-live-datetime{order:2;display:flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:6px 12px;border-radius:12px;background:#fde7ef;color:#111827;border:1px solid #e7a0b9;box-shadow:0 3px 10px rgba(0,0,0,.08);font-weight:800;line-height:1.05;white-space:nowrap;font-variant-numeric:tabular-nums;}
+.sl-live-datetime span{font-size:13px;font-weight:700;}
+.sl-live-datetime b{font-size:16px;letter-spacing:.3px;}
+@media(max-width:600px){.sl-live-datetime{order:2;flex:1 1 auto;min-width:145px;min-height:46px;padding:5px 9px;gap:6px}.sl-live-datetime span{font-size:11px}.sl-live-datetime b{font-size:14px}.sl-three-dot{order:3!important}}
+@media(max-width:380px){.sl-live-datetime{min-width:128px}.sl-live-datetime span{font-size:10px}.sl-live-datetime b{font-size:13px}}
+</style>
+<style id="sl-v20-3dot-custom-style">
+/* V20 Custom: Dashboard + 3-dot only; user chooses which menus stay outside */
+.sl-main-nav{display:flex!important;flex-wrap:wrap!important;align-items:center!important;gap:8px!important;position:sticky!important;top:0!important;overflow:visible!important;background:#fff!important;z-index:100!important;padding:8px!important}
+.sl-dashboard-main{order:0!important;flex:0 0 auto!important}
+.sl-three-dot{display:inline-flex!important;order:1!important;flex:0 0 auto!important;width:52px!important;min-width:52px!important;height:48px!important;align-items:center!important;justify-content:center!important;font-size:30px!important;padding:0!important;background:#173f5f!important;color:#fff!important;border:0!important;border-radius:12px!important;cursor:pointer!important}
+.sl-pinned-wrap{display:flex!important;flex:1 1 auto!important;flex-wrap:wrap!important;gap:8px!important;order:2!important;align-items:center!important}
+.sl-pinned-wrap button{min-height:48px!important;margin:0!important}
+.sl-menu-dropdown{display:none!important;position:absolute!important;left:8px!important;right:8px!important;top:calc(100% + 5px)!important;width:auto!important;max-height:70vh!important;overflow:auto!important;padding:10px!important;background:#fff!important;border:1px solid #ddd!important;border-radius:14px!important;box-shadow:0 10px 28px rgba(0,0,0,.18)!important;flex-wrap:wrap!important;gap:8px!important;animation:slMenuDrop .16s ease both!important;z-index:9999!important}
+.sl-menu-dropdown.open{display:flex!important}
+.sl-menu-dropdown>button{flex:0 1 auto!important;min-height:46px!important;margin:0!important}
+.sl-menu-dropdown #customMenuButtons{display:contents!important}
+@keyframes slMenuDrop{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:none}}
+@media(max-width:600px){.sl-main-nav{gap:7px!important}.sl-three-dot{width:48px!important;min-width:48px!important;height:46px!important}.sl-pinned-wrap{gap:7px!important}.sl-pinned-wrap button{flex:1 1 calc(50% - 7px)!important;font-size:15px!important;min-height:46px!important}.sl-menu-dropdown{left:7px!important;right:7px!important}.sl-menu-dropdown>button{flex:1 1 calc(50% - 7px)!important;font-size:15px!important}}
+</style>
+
+<style>
+.report-scroll,.table-scroll{overflow-x:auto;overflow-y:auto;max-width:100%;max-height:60vh;-webkit-overflow-scrolling:touch;border:1px solid #e5e7eb;border-radius:10px}.report-scroll table,.table-scroll table{min-width:720px}.report-scroll th,.report-scroll td,.table-scroll th,.table-scroll td{white-space:nowrap}.sl-modal{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:99999;display:none;align-items:center;justify-content:center;padding:14px}.sl-modal.open{display:flex}.sl-modal-card{background:#fff;width:min(760px,100%);max-height:92vh;overflow:auto;border-radius:14px;padding:18px;box-shadow:0 20px 60px rgba(0,0,0,.3)}.sl-invoice-preview{font-family:Arial,sans-serif}.sl-invoice-preview h2{text-align:center;margin:0 0 8px}.sl-invoice-preview .meta{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}.sl-invoice-preview table{width:100%;border-collapse:collapse;margin-top:14px}.sl-invoice-preview th,.sl-invoice-preview td{border:1px solid #ddd;padding:7px;text-align:left}.sl-invoice-preview .totals{margin-left:auto;max-width:300px;margin-top:12px}.sl-invoice-preview .totals div{display:flex;justify-content:space-between;padding:4px 0}.sl-due-box{margin-top:14px;padding:12px;border-radius:10px;background:#fff7ed;border:1px solid #fed7aa}.sl-payment-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px}
+@media print{body.sl-print-invoice-preview>*:not(#slInvoicePreviewModal){display:none!important}body.sl-print-invoice-preview #slInvoicePreviewModal{display:flex!important;position:static!important;inset:auto!important;background:#fff!important;padding:0!important;visibility:visible!important}body.sl-print-invoice-preview #slInvoicePreviewModal *{visibility:visible!important}body.sl-print-invoice-preview #slInvoicePreviewModal .sl-modal-card{box-shadow:none!important;max-height:none!important;overflow:visible!important;width:100%!important;border:0!important;padding:0!important}body.sl-print-invoice-preview #slInvoicePreviewActions{display:none!important}body.sl-print-saved-invoice>*:not(#slSavedInvoiceModal){display:none!important}body.sl-print-saved-invoice #slSavedInvoiceModal{display:flex!important;position:static!important;inset:auto!important;background:#fff!important;padding:0!important;visibility:visible!important}body.sl-print-saved-invoice #slSavedInvoiceModal *{visibility:visible!important}body.sl-print-saved-invoice #slSavedInvoiceModal .sl-modal-card{box-shadow:none!important;max-height:none!important;overflow:visible!important;width:100%!important;border:0!important;padding:0!important}body.sl-print-saved-invoice #slSavedInvoiceModal .no-print{display:none!important}}
+</style>
+
+<style>
+/* ===== Smart Ledger Colorful Yes/No Confirmation ===== */
+#slConfirmModal{position:fixed;inset:0;background:rgba(15,23,42,.62);z-index:100000;display:none;align-items:center;justify-content:center;padding:18px}
+#slConfirmModal.open{display:flex}
+.sl-confirm-card{width:min(420px,100%);background:#fff;border-radius:18px;padding:22px;box-shadow:0 18px 60px rgba(0,0,0,.28);text-align:center;animation:slConfirmIn .18s ease}
+@keyframes slConfirmIn{from{opacity:0;transform:translateY(8px) scale(.98)}to{opacity:1;transform:none}}
+.sl-confirm-icon{font-size:42px;margin-bottom:8px}.sl-confirm-title{font-size:20px;font-weight:800;margin:0 0 8px;color:#173f5f}.sl-confirm-msg{font-size:15px;color:#475569;line-height:1.5;margin:0 0 18px}
+.sl-confirm-actions{display:flex;gap:10px;justify-content:center}.sl-confirm-actions button{min-width:115px;border:0;border-radius:10px;padding:11px 18px;font-size:15px;font-weight:800;cursor:pointer;color:#fff;box-shadow:0 3px 8px rgba(0,0,0,.14)}
+.sl-confirm-yes{background:#198754!important;color:#fff!important}.sl-confirm-yes:hover{background:#157347!important}.sl-confirm-no{background:#dc3545!important;color:#fff!important}.sl-confirm-no:hover{background:#bb2d3b!important}
+.sl-confirm-card{border:1px solid rgba(15,23,42,.08);max-width:420px}.sl-confirm-actions button{min-height:46px;touch-action:manipulation}.sl-confirm-icon{width:58px;height:58px;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;border-radius:50%;background:#fde7ef}.sl-confirm-title{letter-spacing:.2px}.sl-confirm-msg{font-weight:600}
+</style>
+<style id="sl-product-save-notice-style">
+#slProductSaveNotice{position:fixed;inset:0;background:rgba(15,23,42,.58);z-index:100001;display:none;align-items:center;justify-content:center;padding:18px}
+#slProductSaveNotice.open{display:flex}
+.sl-product-notice-card{width:min(390px,100%);background:#fff;border-radius:20px;padding:24px 20px;text-align:center;box-shadow:0 20px 70px rgba(0,0,0,.28);border:1px solid #f0b8cc;animation:slProductNoticeIn .18s ease}
+@keyframes slProductNoticeIn{from{opacity:0;transform:translateY(8px) scale(.98)}to{opacity:1;transform:none}}
+.sl-product-notice-icon{width:58px;height:58px;margin:0 auto 10px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#fde7ef;font-size:30px}
+.sl-product-notice-title{margin:0 0 8px;color:#111827;font-size:21px;font-weight:800}
+.sl-product-notice-msg{margin:0 0 18px;color:#374151;font-size:16px;font-weight:600;line-height:1.5}
+#slProductSaveOk{min-width:130px;min-height:46px;border:0;border-radius:11px;background:#198754!important;color:#fff!important;font-size:16px;font-weight:800;cursor:pointer;box-shadow:0 4px 10px rgba(25,135,84,.22)}
+#slProductSaveOk:active{transform:translateY(1px)}
+</style>
+<style id="sl-dark-theme-style">
+/* Smart Ledger: comfortable deep interface theme */
+body{background:#0f172a!important;color:#e5e7eb!important}
+header,.v16-header{background:linear-gradient(135deg,#0b1220,#132238)!important;color:#f8fafc!important}
+.sl-main-nav,nav{background:#111827!important;color:#e5e7eb!important;border-color:#263244!important;box-shadow:0 3px 12px rgba(0,0,0,.28)!important}
+.card,.stat{background:#182234!important;color:#e5e7eb!important;box-shadow:0 3px 12px rgba(0,0,0,.28)!important}
+.card h1,.card h2,.card h3,.card h4,.card h5,.card h6,.stat b,.invoice-title{color:#f8fafc!important}
+label{color:#dbe4ee!important}
+input,select,textarea{background:#0f172a!important;color:#f1f5f9!important;border-color:#334155!important}
+input::placeholder,textarea::placeholder{color:#94a3b8!important}
+.badge,.user-badge{background:#263449!important;color:#dbeafe!important}
+.muted,.form-note,.security-note{color:#aab8c7!important}
+table{background:#182234!important;color:#e5e7eb!important}
+th{background:#243247!important;color:#f8fafc!important}
+th,td{border-color:#334155!important}
+.low{background:#3a1f28!important}
+.v17-stat{background:#182234!important;color:#e5e7eb!important}
+.v17-alert{background:#3a1f28!important}.v17-warn{background:#3b321d!important}.v17-ok{background:#173522!important}
+.v18-summary{background:#fff7fb!important;border:1px solid #e5c8d6!important;color:#111827!important}.v18-summary label,.v18-summary span,.v18-summary b{color:#111827!important}.v18-summary input{background:#fff!important;color:#111827!important;border-color:#e5d9e1!important}.v18-grand{border-top-color:#d78ca9!important}
+.sl-menu-dropdown{background:#182234!important;border-color:#334155!important}
+.sl-modal{background:rgba(2,6,23,.78)!important}
+.sl-modal-card{background:#182234!important;color:#e5e7eb!important}
+.sl-confirm-card{background:#182234!important;color:#e5e7eb!important}
+.sl-confirm-title{color:#f8fafc!important}.sl-confirm-msg{color:#cbd5e1!important}
+.v16-logo-card{background:#172334!important;border-color:#475569!important}.v16-logo-preview-wrap{background:#0f172a!important;border-color:#334155!important}
+/* Keep the login screen and printed invoices clean */
+#loginScreen{background:#f5f7fa!important;color:#222!important}
+#loginScreen .login-box{background:#fff!important;color:#222!important}
+#loginScreen input{background:#fff!important;color:#222!important;border-color:#ccc!important}
+@media print{body{background:#fff!important;color:#000!important}.card,.stat,.sl-modal-card{background:#fff!important;color:#000!important}th{background:#eee!important;color:#000!important}}
+</style>
+
+<style id="sl-soft-pink-theme">
+/* Smart Ledger Soft Pink Theme */
+:root{
+  --sl-primary:#e9a6bd !important;
+  --sl-primary-dark:#d98ba8 !important;
+  --sl-primary-light:#fde8ef !important;
+}
+body{background:#f7f2f4 !important;color:#252126 !important;}
+.card,.panel,.stat,.modal-card,.sl-card,.section-card{background:#fff8fa !important;color:#252126 !important;border-color:#f0d6df !important;}
+button,.btn,.primary,.green,.blue,.nav-btn,.menu-btn{background:#e9a6bd !important;border-color:#e9a6bd !important;color:#241d21 !important;}
+button:hover,.btn:hover,.primary:hover,.green:hover,.blue:hover,.nav-btn:hover,.menu-btn:hover{background:#d98ba8 !important;border-color:#d98ba8 !important;color:#241d21 !important;}
+input,select,textarea{background:#fffafb !important;color:#252126 !important;border-color:#e7cbd5 !important;}
+input:focus,select:focus,textarea:focus{border-color:#d98ba8 !important;box-shadow:0 0 0 3px rgba(233,166,189,.22) !important;}
+th,.table th{background:#f3c9d7 !important;color:#241d21 !important;}
+.dashboard-card,.dash-card,.stat{background:#fde8ef !important;color:#241d21 !important;border-color:#f0c8d5 !important;}
+.dashboard-card *, .dash-card *, .stat *{color:#241d21 !important;}
+.sl-main-nav,.sl-menu-dropdown{background:#fff8fa !important;border-color:#f0d6df !important;}
+.sl-main-nav button,.sl-menu-dropdown button{background:#e9a6bd !important;color:#241d21 !important;}
+.sl-confirm-yes{background:#d98ba8 !important;color:#fff !important;}
+.sl-confirm-no{background:#b76b88 !important;color:#fff !important;}
+.badge,.tag,.pill{background:#f3c9d7 !important;color:#241d21 !important;}
+/* Dashboard number readability fix */
+.stat b,.dashboard-card b,.dash-card b,.v17-stat b{color:#171318 !important;font-size:24px !important;font-weight:800 !important;text-shadow:none !important;}
+@media(max-width:600px){.stat b,.dashboard-card b,.dash-card b,.v17-stat b{font-size:23px !important;}}
+</style>
+
+<style id="sl-appearance-engine">
+:root{--sl-app-bg:#fff7fa;--sl-card-bg:#fff;--sl-nav-bg:#fff;--sl-text:#161616;--sl-muted:#666;--sl-accent-main:#e7a0b8;--sl-accent-dark:#b85d7d;--sl-accent-soft:#fde9f0;--sl-border:#ead4dc;--sl-input:#fff;--sl-shadow:rgba(30,20,25,.14);--sl-font-size:16px;--sl-number-size:28px;--sl-radius:14px;--sl-gap:10px}
+body{background:var(--sl-app-bg)!important;color:var(--sl-text)!important;font-size:var(--sl-font-size)!important;font-family:var(--sl-font-family,Arial,"Noto Sans Bengali",sans-serif)!important}
+nav{background:var(--sl-nav-bg)!important} .card,.stat{background:var(--sl-card-bg)!important;color:var(--sl-text)!important;border-radius:var(--sl-radius)!important;box-shadow:0 3px 14px var(--sl-shadow)!important}.stat b{font-size:var(--sl-number-size)!important;color:var(--sl-text)!important}label,h1,h2,h3,h4,p,td,th,span,b,div{color:inherit}input,select,textarea{background:var(--sl-input)!important;color:var(--sl-text)!important;border-color:var(--sl-border)!important;font-size:calc(var(--sl-font-size) - 1px)!important}.muted,.form-note{color:var(--sl-muted)!important}th{background:var(--sl-accent-soft)!important;color:var(--sl-text)!important}button{background:var(--sl-accent-main)!important;color:#111!important;border-color:transparent!important}.green{background:#198754!important;color:#fff!important}.danger{background:#dc3545!important;color:#fff!important}.secondary{background:#64748b!important;color:#fff!important}.sl-three-dot,.sl-dashboard-main{background:var(--sl-accent-main)!important;color:#111!important}.sl-customer-invoices{margin-top:16px;padding:14px;border:2px solid var(--sl-border);border-radius:var(--sl-radius);background:var(--sl-accent-soft)}.sl-view-memo-btn{white-space:nowrap}.sl-empty-report{padding:18px;border-radius:var(--sl-radius);background:var(--sl-accent-soft);font-weight:700}.sl-color-palette{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}.sl-palette{min-width:78px!important}.sl-palette.pink{background:#e7a0b8!important}.sl-palette.purple{background:#c5b0e8!important}.sl-palette.blue{background:#9ec5e8!important}.sl-palette.green{background:#9bd1b0!important}.sl-palette.orange{background:#f0bd8b!important}.sl-appearance-actions{display:flex;gap:8px;flex-wrap:wrap}.sl-appearance-settings{border:2px solid var(--sl-border)}
+body.sl-theme-night{--sl-app-bg:#18202b;--sl-card-bg:#222c39;--sl-nav-bg:#202a36;--sl-text:#f3f4f6;--sl-muted:#c0c7d0;--sl-accent-soft:#303946;--sl-input:#1b2530;--sl-border:#46515e;--sl-shadow:rgba(0,0,0,.35)}
+body.sl-theme-dark{--sl-app-bg:#0e1116;--sl-card-bg:#171b22;--sl-nav-bg:#151922;--sl-text:#f5f5f5;--sl-muted:#c4c8cf;--sl-accent-soft:#252b34;--sl-input:#11161c;--sl-border:#3c444f;--sl-shadow:rgba(0,0,0,.5)}
+body.sl-theme-day{--sl-app-bg:#f4f7fb;--sl-card-bg:#fff;--sl-nav-bg:#fff;--sl-text:#171717;--sl-muted:#666;--sl-accent-main:#b9d4ea;--sl-accent-dark:#5e8caf;--sl-accent-soft:#eaf3fa;--sl-border:#d7e3ec;--sl-input:#fff}
+body.sl-theme-lavender{--sl-app-bg:#f7f4fc;--sl-card-bg:#fff;--sl-nav-bg:#fff;--sl-text:#1d1830;--sl-muted:#6b6477;--sl-accent-main:#c7b3e6;--sl-accent-dark:#8667b1;--sl-accent-soft:#eee8f8;--sl-border:#ded2ee;--sl-input:#fff}
+.sl-font-small{--sl-font-size:14px}.sl-font-normal{--sl-font-size:16px}.sl-font-large{--sl-font-size:18px}.sl-font-xlarge{--sl-font-size:20px}.sl-num-normal{--sl-number-size:26px}.sl-num-large{--sl-number-size:30px}.sl-num-xlarge{--sl-number-size:34px}.sl-radius-soft{--sl-radius:10px}.sl-radius-round{--sl-radius:20px}.sl-radius-square{--sl-radius:4px}.sl-density-compact .card{padding:11px;margin-bottom:10px}.sl-density-compact .grid{gap:7px}.sl-density-spacious .card{padding:20px;margin-bottom:20px}.sl-density-spacious .grid{gap:14px}
+@media(max-width:600px){.sl-view-memo-btn{padding:8px 9px!important;font-size:13px!important}.sl-customer-invoices{padding:10px}.sl-appearance-settings .grid{grid-template-columns:1fr 1fr}.sl-appearance-settings label{font-size:13px}}
+</style>
+
+<style id="sl-login-date-visibility-fix">
+/* Login text: strong contrast in every appearance/theme */
+#loginScreen, #loginScreen *{color:#171717 !important;}
+#loginScreen .login-box h1{font-weight:900 !important;color:#111 !important;}
+#loginScreen .login-box p{font-weight:600 !important;color:#242424 !important;}
+#loginScreen .login-box label{font-weight:800 !important;color:#111 !important;}
+#loginScreen .login-box .remember-row{font-weight:800 !important;color:#111 !important;}
+#loginScreen .login-box .remember-row span{color:#111 !important;font-weight:800 !important;}
+#loginScreen .login-box .security-note{color:#333 !important;font-weight:600 !important;}
+#loginScreen .login-box input::placeholder{color:#555 !important;opacity:1 !important;font-weight:600 !important;}
+#loginScreen .login-box input{font-weight:600 !important;color:#111 !important;}
+#loginScreen .login-box button{font-weight:800 !important;}
+#loginScreen #loginMsg{color:#a00000 !important;font-weight:800 !important;}
+
+/* Native Android date picker: keep the calendar action text readable. */
+input[type="text" inputmode="none" autocomplete="off" readonly class="sl-custom-date"]{
+  color-scheme:light !important;
+  accent-color:#c75d82 !important;
+  color:#171717 !important;
+  font-weight:600 !important;
+}
+input[type="text" inputmode="none" autocomplete="off" readonly class="sl-custom-date"]::-webkit-datetime-edit,
+input[type="text" inputmode="none" autocomplete="off" readonly class="sl-custom-date"]::-webkit-datetime-edit-text,
+input[type="text" inputmode="none" autocomplete="off" readonly class="sl-custom-date"]::-webkit-datetime-edit-month-field,
+input[type="text" inputmode="none" autocomplete="off" readonly class="sl-custom-date"]::-webkit-datetime-edit-day-field,
+input[type="text" inputmode="none" autocomplete="off" readonly class="sl-custom-date"]::-webkit-datetime-edit-year-field{
+  color:#171717 !important;
+  font-weight:600 !important;
+}
+</style>
+
+<style>
+/* Smart Ledger custom date picker: avoids Android native CLEAR/SET contrast issues */
+.sl-custom-date{cursor:pointer!important;background:#fff!important;color:#111827!important;font-weight:700!important;}
+.sl-custom-date::placeholder{color:#64748b!important;opacity:1!important;}
+#slDatePicker{position:fixed;inset:0;background:rgba(15,23,42,.62);z-index:999999;display:none;align-items:center;justify-content:center;padding:16px;}
+#slDatePicker.open{display:flex;}
+.sl-date-card{width:min(380px,96vw);background:#fff;border-radius:22px;box-shadow:0 20px 70px rgba(0,0,0,.32);overflow:hidden;color:#111827;}
+.sl-date-head{padding:18px 18px 12px;background:#f8b4c8;text-align:center;}
+.sl-date-title{font-size:18px;font-weight:900;margin:0 0 10px;}
+.sl-date-nav{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.sl-date-nav button{border:0;background:rgba(255,255,255,.78);color:#111827;width:44px;height:42px;border-radius:12px;font-size:25px;font-weight:900;cursor:pointer;}
+#slDateMonth{font-size:19px;font-weight:900;flex:1;text-align:center;}
+.sl-date-week,.sl-date-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;padding:10px 14px 0;}
+.sl-date-week div{text-align:center;font-weight:800;color:#475569;font-size:13px;padding:4px 0;}
+.sl-date-grid{padding-top:4px;padding-bottom:14px;}
+.sl-date-day{border:0;background:#f8fafc;color:#111827;min-height:40px;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;}
+.sl-date-day:hover{background:#f8b4c8;}
+.sl-date-day.other{color:#94a3b8;background:#f8fafc;}
+.sl-date-day.selected{background:#e58bab;color:#111827;font-weight:900;outline:2px solid #c95d7e;}
+.sl-date-day.today{box-shadow:inset 0 0 0 2px #111827;}
+.sl-date-actions{display:flex;gap:10px;padding:14px 16px 18px;border-top:1px solid #e5e7eb;}
+.sl-date-actions button{flex:1;border:0;border-radius:11px;padding:12px 10px;font-size:15px;font-weight:900;cursor:pointer;}
+#slDateClear{background:#eef2f7;color:#111827;}
+#slDateCancel{background:#e2e8f0;color:#111827;}
+#slDateSet{background:#198754;color:#fff;}
+@media (prefers-color-scheme:dark){.sl-custom-date{background:#fff!important;color:#111827!important;}}
+</style>
+
+<style id="sl-report-light-table-fix">
+/* Report table rows: remove dark/navy backgrounds and keep text easy to read */
+#dailyDetails table td, #dailyCash table td, #dailyStock table td, #advDailyTable table td,
+#advCustomerTable table td, #advProductTable table td {
+  background:#fff8fa !important;
+  color:#171318 !important;
+  border-color:#e6cfd8 !important;
+}
+#dailyDetails table tr:nth-child(even) td, #dailyCash table tr:nth-child(even) td,
+#dailyStock table tr:nth-child(even) td, #advDailyTable table tr:nth-child(even) td,
+#advCustomerTable table tr:nth-child(even) td, #advProductTable table tr:nth-child(even) td {
+  background:#fdeef3 !important;
+}
+#dailyDetails table th, #dailyCash table th, #dailyStock table th, #advDailyTable table th,
+#advCustomerTable table th, #advProductTable table th {
+  background:#f3c9d7 !important;
+  color:#171318 !important;
+}
+</style>
+
+<style id="sl-final-light-table-global">
+/* Final global table readability fix: no navy/dark row backgrounds */
+table, table tbody, table tr{background:#fff8fa !important;}
+table td{background:#fff8fa !important;color:#171318 !important;border-color:#e6cfd8 !important;}
+table tr:nth-child(even) td{background:#fdeef3 !important;color:#171318 !important;}
+table th{background:#f3c9d7 !important;color:#171318 !important;border-color:#dfbdca !important;font-weight:800 !important;}
+tr.low td{background:#fff1f4 !important;color:#171318 !important;}
+/* Keep readable text in table containers and report rows */
+.table-wrap,.table-scroll,.report-scroll{background:#fff8fa !important;color:#171318 !important;}
+.table-wrap td,.table-scroll td,.report-scroll td{color:#171318 !important;}
+</style>
+
+<style id="sl-inventory-light-bg-final">
+/* Final readability fix: Advanced Inventory stat cards */
+.v17-stat{background:#fff4f7 !important;color:#241d21 !important;border:1px solid #efcbd7 !important;box-shadow:0 3px 12px rgba(30,20,25,.10) !important;}
+.v17-stat *{color:#241d21 !important;}
+.v17-stat b{color:#171318 !important;}
+.v17-alert{background:#fff1f2 !important;color:#7f1d1d !important;border-color:#fecaca !important;}
+.v17-warn{background:#fff7ed !important;color:#7c2d12 !important;border-color:#fed7aa !important;}
+.v17-ok{background:#f0fdf4 !important;color:#166534 !important;border-color:#bbf7d0 !important;}
+</style>
+
+<style id="sl-invoice-final-light-fix">
+/* Final force-fix for Advanced Sales Invoice summary: remove navy background */
+#invoiceAdvanced .v18-summary,
+#invoiceAdvanced .v18-summary.v18-summary,
+#invoiceAdvanced .v18-summary * {
+  background-color: #fff8fa !important;
+  color: #171318 !important;
+  border-color: #ead4dc !important;
+}
+#invoiceAdvanced .v18-summary input,
+#invoiceAdvanced .v18-summary select,
+#invoiceAdvanced .v18-summary textarea {
+  background-color: #ffffff !important;
+  color: #171318 !important;
+  border: 1px solid #e7cbd5 !important;
+}
+#invoiceAdvanced .v18-summary .v18-summary-row {
+  background-color: #fff8fa !important;
+  color: #171318 !important;
+}
+#invoiceAdvanced .v18-summary .v18-grand {
+  background-color: #fdeef3 !important;
+  color: #171318 !important;
+  border-top: 2px solid #d78ca9 !important;
+}
+#invoiceAdvanced .v18-summary .v18-summary-row span,
+#invoiceAdvanced .v18-summary .v18-summary-row b,
+#invoiceAdvanced .v18-summary label {
+  color: #171318 !important;
+}
+</style>
+<style id="sl-advanced-receipt-final-force-light">
+/* FINAL: Advanced Invoice & Receipt - force light readable summary */
+#invoiceAdvanced .v18-summary,
+#invoiceAdvanced .v18-summary .v18-summary-row,
+#invoiceAdvanced .v18-summary .v18-grand,
+#invoiceAdvanced .v18-summary > div,
+#invoiceAdvanced .v18-summary > .grid,
+#invoiceAdvanced .v18-summary > .grid > div {
+  background: #fffafc !important;
+  background-color: #fffafc !important;
+  color: #111827 !important;
+  text-shadow: none !important;
+}
+#invoiceAdvanced .v18-summary {
+  border: 1px solid #e5c8d6 !important;
+  border-radius: 12px !important;
+  box-shadow: none !important;
+}
+#invoiceAdvanced .v18-summary span,
+#invoiceAdvanced .v18-summary b,
+#invoiceAdvanced .v18-summary label,
+#invoiceAdvanced .v18-summary div,
+#invoiceAdvanced .v18-summary p {
+  color: #111827 !important;
+  opacity: 1 !important;
+}
+#invoiceAdvanced .v18-summary input,
+#invoiceAdvanced .v18-summary select,
+#invoiceAdvanced .v18-summary textarea {
+  background: #ffffff !important;
+  background-color: #ffffff !important;
+  color: #111827 !important;
+  border: 1px solid #d8c1cc !important;
+  opacity: 1 !important;
+}
+#invoiceAdvanced .v18-summary .v18-grand {
+  background: #fdeef3 !important;
+  background-color: #fdeef3 !important;
+  border-top: 2px solid #d78ca9 !important;
+  color: #111827 !important;
+}
+#invoiceAdvanced .v18-summary .v18-grand span,
+#invoiceAdvanced .v18-summary .v18-grand b { color: #111827 !important; }
+</style>
+</head>
+<body>
+<div id="loginScreen">
+<div class="login-box">
+<div class="logo">🔐</div>
+<h1>Smart Ledger 1.0</h1>
+<p style="text-align:center">Secure Business Login</p>
+<label>Username</label>
+<input id="loginUser" autocomplete="username" placeholder="Username">
+<label>Password</label>
+<input id="loginPass" type="password" autocomplete="current-password" placeholder="Password" onkeydown="if(event.key==='Enter')login()">
+<label class="remember-row"><input id="rememberLogin" type="checkbox"> <span>Remember this password</span></label>
+<br><button class="green" style="width:100%" onclick="login()">🔓 Login</button>
+<p id="loginMsg" style="color:#c00;text-align:center"></p>
+<p class="security-note">প্রথমবার ব্যবহার করলে Default Admin: <b>admin</b> / <b>1234</b></p>
+</div>
+</div>
+
+
+
+<div id="slProductSaveNotice" aria-hidden="true">
+  <div class="sl-product-notice-card" role="dialog" aria-modal="true" aria-labelledby="slProductSaveTitle">
+    <div class="sl-product-notice-icon">✓</div>
+    <h3 id="slProductSaveTitle" class="sl-product-notice-title">Product Saved</h3>
+    <p id="slProductSaveMsg" class="sl-product-notice-msg">Product সফলভাবে Save হয়েছে।</p>
+    <button type="button" id="slProductSaveOk">OK</button>
+  </div>
+</div>
+<div id="slConfirmModal" aria-hidden="true">
+  <div class="sl-confirm-card" role="dialog" aria-modal="true" aria-labelledby="slConfirmTitle">
+    <div class="sl-confirm-icon">❓</div>
+    <h3 id="slConfirmTitle" class="sl-confirm-title">Confirm</h3>
+    <p id="slConfirmMsg" class="sl-confirm-msg"></p>
+    <div class="sl-confirm-actions">
+      <button type="button" class="sl-confirm-yes" id="slConfirmYes">✓ Yes</button>
+      <button type="button" class="sl-confirm-no" id="slConfirmNo">✕ No</button>
+    </div>
+  </div>
+</div>
+<header class="v16-header">
+<div id="slNotifyWrap" class="sl-notify-wrap no-print"><button id="slNotifyBtn" class="sl-notify-btn" onclick="slToggleNotifications()" title="Notifications">🔔<span id="slNotifyBadge" class="sl-notify-badge">0</span></button><div id="slNotifyPanel" class="sl-notify-panel"><div class="sl-notify-head"><b>🔔 Notifications</b><button onclick="slClearNotifications()">Clear</button></div><div id="slNotifyList"><div class="sl-notify-empty">কোনো নতুন Notification নেই।</div></div></div></div><div class="v16-brand"><div class="v16-logo-wrap"><img id="slHeaderLogo" class="v16-header-logo" alt="Business Logo"><span id="slHeaderLogoFallback">📊</span></div><div><h1>Smart Ledger 1.0</h1><div>Complete Business Management</div></div></div></header>
+<nav class="no-print sl-main-nav">
+<button class="sl-dashboard-main" onclick="showPage('dashboard')">🏠 Dashboard</button>
+<button class="sl-three-dot" id="slMenuToggle" onclick="slToggleMainMenu(event)" aria-label="Menu">⋮</button>
+<div id="slLiveDateTime" class="sl-live-datetime" aria-live="polite" title="Current Date & Time"><span id="slLiveDate">--/--/----</span><b id="slLiveTime">--:--:--</b></div>
+<div id="slMenuDropdown" class="sl-menu-dropdown">
+<button onclick="showPage('settings')">⚙️ Settings</button><button class="daily-btn" onclick="showPage('dailyReport')">📅 Daily Business</button>
+<button onclick="showPage('products')">Products</button>
+<button onclick="showPage('customers')">Customers</button>
+<button onclick="showPage('invoice')">New Invoice</button>
+<button onclick="showPage('sales')">Sales History</button>
+<button onclick="showPage('purchase')">Purchase</button>
+<button onclick="showPage('expense')">Expense</button>
+<button onclick="showPage('cash')">Cash</button>
+<button onclick="showPage('reports')">Reports</button>
+<button onclick="showPage('advancedReports')">📊 Advanced Reports</button><button onclick="showPage('barcodeQR')">📦 Barcode & QR</button><button onclick="showPage('backup')">Backup/Restore</button><button onclick="showPage('customerReport')">Customer Report</button><button onclick="showPage('dueManagement')">💰 Due Management</button><button onclick="showPage('stockReport')">Stock Report</button><button onclick="showPage('stockAdjust')">Stock Adjustment</button><button onclick="showPage('suppliers')">Suppliers</button><button onclick="showPage('purchaseInvoice')">Purchase Invoice</button><button onclick="showPage('plDashboard')">P&amp;L Dashboard</button><button class="return-btn" onclick="showPage('returns')">↩️ Sales/Purchase Return</button><button class="v17-btn" onclick="showPage('inventoryControl')">📦 Advanced Inventory</button><button class="v18-btn" onclick="showPage('invoiceAdvanced')">🧾 Invoice & Receipt</button>
+<button class="v19-btn" onclick="showPage('securityCenter');v19Refresh()">🔐 Security Center</button><button class="menu-edit-btn" onclick="showPage('menuEditor')">☰ Menu Edit</button><button class="menu-arrange-btn" onclick="showPage('menuArrange');slRenderMenuArrange()">↕️ Menu সাজান</button><span id="customMenuButtons" style="display:contents"></span>
+</div>
+</nav>
+<div class="top-user"><span class="user-badge">👤 <span id="currentUser">Not logged in</span></span><button class="secondary" onclick="logout()">Logout</button></div><main>
+<section id="dashboard" class="page active">
+<div class="grid">
+<div class="stat">মোট বিক্রয়<b id="dSales">৳0</b></div>
+<div class="stat">মোট ক্রয়<b id="dPurchase">৳0</b></div>
+<div class="stat">মোট খরচ<b id="dExpense">৳0</b></div>
+<div class="stat">আনুমানিক লাভ<b id="dProfit">৳0</b></div>
+<div class="stat">বর্তমান ক্যাশ<b id="dCash">৳0</b></div>
+<div class="stat">মোট স্টক<b id="dStock">0</b></div>
+</div>
+<div class="card"><h3>কম স্টক</h3><div id="lowStock">কোনো কম স্টক নেই।</div></div>
+</section>
+
+<section id="products" class="page">
+<div class="card"><h2>Product Management</h2>
+<div class="grid">
+<div><label>পণ্যের নাম</label><input id="pName"></div>
+<div><label>ক্রয় মূল্য</label><input id="pBuy" type="number" step="0.01"></div>
+<div><label>বিক্রয় মূল্য</label><input id="pSell" type="number" step="0.01"></div>
+<div><label>Opening Stock</label><input id="pStock" type="number" step="0.01"></div>
+</div><br><button onclick="saveProduct()">Save Product</button> <button class="secondary" onclick="clearProduct()">Clear</button>
+<input id="productSearch" placeholder="🔎 পণ্য খুঁজুন..." oninput="renderProducts()">
+<div id="productTable"></div></div>
+</section>
+
+<section id="customers" class="page">
+<div class="card"><h2>Customer Management</h2>
+<div class="grid">
+<div><label>Customer Name</label><input id="cName"></div>
+<div><label>Mobile Number</label><input id="cPhone"></div>
+<div><label>Address</label><input id="cAddress"></div>
+</div><br><button onclick="saveCustomer()">Save Customer</button> <button class="secondary" onclick="clearCustomer()">Clear</button>
+<input id="customerSearch" placeholder="🔎 Customer খুঁজুন (নাম/মোবাইল/ঠিকানা)..." oninput="renderCustomers()">
+<div id="customerTable"></div></div>
+</section>
+
+<section id="invoice" class="page">
+<div class="card">
+<div class="invoice-head"><div class="v16-invoice-brand"><img id="slInvoiceLogo" class="v16-invoice-logo" alt="Logo"><div><div class="invoice-title">নতুন ইনভয়েস</div><span id="invoiceNo"></span></div></div><div><label>তারিখ</label><input id="invDate" type="text" inputmode="none" autocomplete="off" readonly class="sl-custom-date"></div></div><hr>
+<div class="grid">
+<div><label>Customer</label><select id="invCustomer" onchange="customerInfo()"></select></div>
+<div><label>Mobile</label><input id="invPhone" readonly></div>
+<div><label>Address</label><input id="invAddress" readonly></div>
+</div>
+<h3>পণ্য যোগ করুন</h3>
+<div class="grid">
+<div><label>Product</label><select id="invProduct" onchange="productInfo()"></select></div>
+<div><label>Stock</label><input id="invStock" readonly></div>
+<div><label>Quantity</label><input id="invQty" type="number" min="0.01" step="0.01" oninput="invoiceCalc()"></div>
+<div><label>Sale Price</label><input id="invPrice" type="number" step="0.01" oninput="invoiceCalc()"></div>
+<div><label>Line Total</label><input id="invLineTotal" readonly></div>
+</div><br><button onclick="addInvoiceItem()">+ পণ্য যোগ করুন</button>
+<div id="invoiceItems"></div>
+<div class="right total">সর্বমোট: <span id="invTotal">৳0.00</span></div><br>
+<div class="card sl-due-box"><h3>💰 Payment / Due</h3><div class="sl-payment-grid"><div><label>Payment Type</label><select id="invPaymentType" onchange="if(this.value==='partial'){document.getElementById('invPaid').value='';}invoicePaymentCalc()"><option value="cash">Cash</option><option value="partial">Partial / আংশিক</option><option value="due">Full Due / বাকী</option></select></div><div><label>Cash Received</label><input id="invPaid" type="number" min="0" step="0.01" value="0" oninput="invoicePaymentCalc()"></div><div><label>Due Amount</label><input id="invDue" readonly></div></div></div><br>
+<button class="green" onclick="saveInvoice()">Save Invoice</button>
+<button onclick="printInvoice()">Print</button>
+<button class="secondary" onclick="newInvoice()">New</button>
+</div>
+</section>
+
+
+<section id="invoiceAdvanced" class="page">
+<div class="card">
+<h2>🧾 Advanced Invoice & Receipt</h2>
+<p class="muted">Professional cash invoice — Discount, VAT/Tax, Cash Received ও Change সহ।</p>
+<div class="grid">
+<div><label>Invoice No</label><input id="v18InvNo" readonly></div>
+<div><label>Date</label><input id="v18Date" type="text" inputmode="none" autocomplete="off" readonly class="sl-custom-date"></div>
+<div><label>Customer</label><select id="v18Customer"></select></div>
+<div><label>Mobile</label><input id="v18Phone" readonly></div>
+</div>
+<h3>পণ্য যোগ করুন</h3>
+<div class="grid">
+<div><label>Product</label><select id="v18Product" onchange="v18ProductInfo()"></select></div>
+<div><label>Stock</label><input id="v18Stock" readonly></div>
+<div><label>Quantity</label><input id="v18Qty" type="number" min="0.01" step="0.01" oninput="v18Calc()"></div>
+<div><label>Sale Price</label><input id="v18Price" type="number" min="0" step="0.01" oninput="v18Calc()"></div>
+<div><label>Line Total</label><input id="v18Line" readonly></div>
+</div><br>
+<button onclick="v18AddItem()">+ পণ্য যোগ করুন</button>
+<div id="v18Items"></div>
+<div class="v18-summary">
+<div class="v18-summary-row"><span>Subtotal</span><b id="v18Subtotal">৳0.00</b></div>
+<div class="grid">
+<div><label>Discount</label><input id="v18Discount" type="number" min="0" step="0.01" value="0" oninput="v18Recalc()"></div>
+<div><label>VAT/Tax</label><input id="v18Tax" type="number" min="0" step="0.01" value="0" oninput="v18Recalc()"></div>
+<div><label>Cash Received</label><input id="v18Paid" type="number" min="0" step="0.01" value="0" oninput="v18Recalc()"></div>
+</div>
+<div class="v18-summary-row"><span>Discount</span><b id="v18DiscountShow">৳0.00</b></div>
+<div class="v18-summary-row"><span>VAT/Tax</span><b id="v18TaxShow">৳0.00</b></div>
+<div class="v18-summary-row v18-grand"><span>Grand Total</span><b id="v18Grand">৳0.00</b></div>
+<div class="v18-summary-row"><span>Change</span><b id="v18Change">৳0.00</b></div>
+</div><br>
+<button class="green" onclick="v18Save()">💾 Save Invoice</button>
+<button onclick="v18Print()">🖨️ Print Receipt</button>
+<button class="secondary" onclick="v18New()">New Invoice</button>
+</div>
+<div id="v18PrintArea" class="v18-receipt" style="display:none"></div>
+</section>
+
+<section id="sales" class="page"><div class="card"><h2>Sales History</h2><div id="salesTable"></div></div></section>
+
+<section id="purchase" class="page"><div class="card"><h2>Purchase</h2>
+<div class="grid"><div><label>Product</label><select id="puProduct"></select></div><div><label>Quantity</label><input id="puQty" type="number" step="0.01"></div><div><label>Purchase Price</label><input id="puPrice" type="number" step="0.01"></div></div><br><button onclick="savePurchase()">Save Purchase</button><div id="purchaseTable"></div></div></section>
+
+<section id="expense" class="page"><div class="card"><h2>Expense</h2><p class="muted">Expense এন্ট্রি করলে Cash কমবে।</p>
+<div class="grid"><div><label>খরচের নাম</label><input id="eName"></div><div><label>Amount</label><input id="eAmount" type="number" step="0.01"></div></div><br><button onclick="saveExpense()">Save Expense</button><div id="expenseTable"></div></div></section>
+
+<section id="cash" class="page">
+<div class="card">
+<h2>💵 Cash Management</h2>
+<div class="grid">
+<div class="stat">বর্তমান ক্যাশ<b id="cashValue">৳0</b></div>
+<div class="stat">ব্যাংকে মোট জমা<b id="bankValue">৳0</b></div>
+</div>
+<p class="muted">ব্যাংকে টাকা জমা দিলে Cash কমবে এবং Bank Balance বাড়বে।</p>
+</div>
+<div class="card">
+<h3>🏦 Bank Deposit / ব্যাংকে টাকা জমা</h3>
+<p class="muted">হাতে থাকা Cash থেকে ব্যাংকে জমা দিলে এখানে এন্ট্রি করুন। এটি Expense নয়—Cash থেকে Bank-এ স্থানান্তর।</p>
+<div class="grid">
+<div><label>তারিখ</label><input id="bdDate" type="text" inputmode="none" autocomplete="off" readonly class="sl-custom-date"></div>
+<div><label>Account Number / অ্যাকাউন্ট নম্বর</label><input id="bdAccountNumber" placeholder="অ্যাকাউন্ট নম্বর"></div>
+<div><label>Account Name / অ্যাকাউন্ট নাম</label><input id="bdAccountName" placeholder="অ্যাকাউন্টের নাম"></div>
+<div><label>Bank Name / ব্যাংকের নাম</label><input id="bdBank" placeholder="যেমন: ইসলামী ব্যাংক"></div>
+<div><label>জমার পরিমাণ</label><input id="bdAmount" type="number" min="0" step="0.01" placeholder="৳ Amount"></div>
+<div><label>Deposit Slip / Reference</label><input id="bdRef" placeholder="Slip / Reference No."></div>
+<div><label>নোট</label><input id="bdNote" placeholder="প্রয়োজনে লিখুন"></div>
+</div><br>
+<button class="green" onclick="saveBankDeposit()">🏦 Bank Deposit Save</button>
+<button class="secondary" onclick="clearBankDeposit()">Clear</button>
+<div id="bankDepositSummary"></div><div id="bankDepositTable"></div>
+</div>
+<div class="card">
+<h3>📅 Daily Cash Closing / দৈনিক ক্যাশ বন্ধ</h3>
+<div class="grid">
+<div><label>তারিখ</label><input id="cbDate" type="text" inputmode="none" autocomplete="off" readonly class="sl-custom-date"></div>
+<div><label>Opening Cash</label><input id="cbOpening" type="number" min="0" step="0.01" placeholder="শুরুর নগদ" oninput="calcCashClosing()"></div>
+<div><label>Cash In</label><input id="cbIn" type="number" min="0" step="0.01" placeholder="অতিরিক্ত নগদ" oninput="calcCashClosing()"></div>
+<div><label>Cash Out</label><input id="cbOut" type="number" min="0" step="0.01" placeholder="নগদ খরচ/উত্তোলন" oninput="calcCashClosing()"></div>
+<div><label>Closing Cash</label><input id="cbClosing" readonly></div>
+<div><label>Note</label><input id="cbNote" placeholder="যেমন: দিনের শেষে হাতে নগদ"></div>
+</div><br>
+<button class="green" onclick="saveCashClosing()">Save Daily Closing</button>
+<button class="secondary" onclick="newCashClosing()">Clear</button>
+<div id="cashSummary"></div>
+</div>
+<div class="card">
+<h3>📒 Cash Movement / নগদ লেনদেন</h3>
+<div class="grid">
+<div><label>তারিখ</label><input id="cmDate" type="text" inputmode="none" autocomplete="off" readonly class="sl-custom-date"></div>
+<div><label>Type</label><select id="cmType"><option value="in">Cash In</option><option value="out">Cash Out</option></select></div>
+<div><label>Category</label><input id="cmCategory" placeholder="যেমন: Owner Capital / Personal Withdrawal"></div>
+<div><label>Amount</label><input id="cmAmount" type="number" min="0" step="0.01"></div>
+<div><label>Note</label><input id="cmNote"></div>
+</div><br>
+<button onclick="saveCashMovement()">Save Cash Movement</button>
+<div id="cashMovementTable"></div>
+</div>
+<div class="card">
+<h3>📋 Daily Closing History</h3>
+<div id="cashClosingTable"></div>
+</div>
+</section>
+
+<section id="reports" class="page"><div class="card"><h2>Reports</h2><div id="reportBox"></div></div></section>
+
+<section id="backup" class="page">
+<div class="card">
+<h2>💾 Backup & Restore</h2>
+<p>Product, Customer, Sales, Purchase ও Expense ডাটা একসাথে Backup করুন।</p>
+<button class="green" onclick="downloadBackup()">⬇️ Backup Download</button>
+<button class="secondary" onclick="document.getElementById('restoreFile').click()">⬆️ Restore Backup</button>
+<input id="restoreFile" type="file" accept=".json,application/json" style="display:none" onchange="restoreBackup(event)">
+<p class="muted">নিয়মিত Backup ফাইল ফোন বা Google Drive-এ নিরাপদে রাখুন।</p>
+</div>
+<div class="card">
+<h2>📅 Daily / Monthly Report</h2>
+<div class="grid">
+<div><label>Report Type</label><select id="reportType" onchange="renderPeriodReport()"><option value="daily">Daily</option><option value="monthly">Monthly</option></select></div>
+<div><label>Date / Month</label><input id="reportPeriod" type="text" inputmode="none" autocomplete="off" readonly class="sl-custom-date" onchange="renderPeriodReport()"></div>
+</div>
+<div id="periodReport"></div>
+</div>
+</section>
+
+
+<section id="customerReport" class="page">
+<div class="card">
+<h2>👤 Customer Sales Report</h2>
+<div class="grid">
+<div><label>Customer</label><select id="crCustomer" onchange="renderCustomerReport()"></select></div>
+</div>
+<div id="customerReportBox"></div>
+</div>
+</section>
+
+<section id="dueManagement" class="page"><div class="card"><h2>💰 Customer Due Management</h2><p class="muted">Customer-এর বকেয়া দেখুন এবং পরে টাকা গ্রহণ করে Due কমান।</p><div id="dueManagementBox"></div></div></section>
+
+<section id="stockReport" class="page">
+<div class="card">
+<h2>📦 Stock & Product Profit Report</h2>
+<p class="muted">প্রতি পণ্যের বর্তমান স্টক, স্টক মূল্য এবং বিক্রয়/ক্রয় তথ্য দেখুন।</p>
+<div id="stockReportBox"></div>
+</div>
+</section>
+
+
+<section id="stockAdjust" class="page">
+<div class="card">
+<h2>🛠️ Stock Adjustment</h2>
+<p class="muted">গুদাম/হাতে থাকা স্টকের সাথে সফটওয়্যারের স্টক মিল না হলে এখানে সমন্বয় করুন।</p>
+<div class="grid">
+<div><label>Product</label><select id="adjProduct" onchange="adjInfo()"></select></div>
+<div><label>Current Stock</label><input id="adjCurrent" readonly></div>
+<div><label>New Actual Stock</label><input id="adjNew" type="number" min="0" step="0.01"></div>
+<div><label>Reason</label><input id="adjReason" placeholder="যেমন: গুনতি ভুল / নষ্ট / পাওয়া গেছে"></div>
+</div><br>
+<button class="green" onclick="saveAdjustment()">Save Adjustment</button>
+<div id="adjustmentTable"></div>
+</div>
+</section>
+
+
+<section id="suppliers" class="page">
+<div class="card">
+<h2>🏢 Supplier / Vendor Management</h2>
+<div class="grid">
+<div><label>Supplier Name</label><input id="sName"></div>
+<div><label>Mobile Number</label><input id="sPhone"></div>
+<div><label>Address</label><input id="sAddress"></div>
+</div><br>
+<button class="green" onclick="saveSupplier()">Save Supplier</button>
+<button class="secondary" onclick="clearSupplier()">Clear</button>
+<div id="supplierTable"></div>
+</div>
+</section>
+
+<section id="purchaseInvoice" class="page">
+<div class="card">
+<div class="invoice-head">
+<div><div class="invoice-title">Purchase Invoice</div><span id="purchaseInvNo"></span></div>
+<div><label>Date</label><input id="piDate" type="text" inputmode="none" autocomplete="off" readonly class="sl-custom-date"></div>
+</div><hr>
+<div class="grid">
+<div><label>Supplier</label><select id="piSupplier" onchange="supplierInfo()"></select></div>
+<div><label>Mobile</label><input id="piPhone" readonly></div>
+<div><label>Address</label><input id="piAddress" readonly></div>
+</div>
+<h3>পণ্য যোগ করুন</h3>
+<div class="grid">
+<div><label>Product</label><select id="piProduct" onchange="purchaseProductInfo()"></select></div>
+<div><label>Quantity</label><input id="piQty" type="number" min="0.01" step="0.01" oninput="purchaseLineCalc()"></div>
+<div><label>Purchase Price</label><input id="piPrice" type="number" min="0" step="0.01" oninput="purchaseLineCalc()"></div>
+<div><label>Line Total</label><input id="piLineTotal" readonly></div>
+</div><br>
+<button onclick="addPurchaseInvoiceItem()">+ পণ্য যোগ করুন</button>
+<div id="purchaseInvoiceItems"></div>
+<div class="right total">সর্বমোট ক্রয়: <span id="piTotal">৳0.00</span></div><br>
+<button class="green" onclick="savePurchaseInvoice()">Save Purchase Invoice</button>
+<button onclick="printPurchaseInvoice()">Print</button>
+<button class="secondary" onclick="newPurchaseInvoice()">New</button>
+<div id="purchaseInvoiceHistory"></div>
+</div>
+</section>
+
+
+<section id="plDashboard" class="page">
+<div class="card">
+<h2>📊 Complete Business Management</h2>
+<p class="muted">বিক্রয়কৃত পণ্যের প্রকৃত ক্রয়মূল্য (COGS) ধরে Gross Profit এবং Expense বাদ দিয়ে Net Profit দেখানো হয়।</p>
+<div class="grid">
+<div class="stat">মোট বিক্রয়<b id="plSales">৳0.00</b></div>
+<div class="stat">বিক্রিত পণ্যের ক্রয়মূল্য<b id="plCogs">৳0.00</b></div>
+<div class="stat">Gross Profit<b id="plGross">৳0.00</b></div>
+<div class="stat">মোট খরচ<b id="plExpense">৳0.00</b></div>
+<div class="stat">Net Profit<b id="plNet">৳0.00</b></div>
+<div class="stat">Stock Value<b id="plStockValue">৳0.00</b></div>
+<div class="stat">Current Cash<b id="plCash">৳0.00</b></div>
+<div class="stat">Profit Margin<b id="plMargin">0.00%</b></div>
+</div>
+</div>
+<div class="card">
+<h3>📅 Period Profit & Loss</h3>
+<div class="grid">
+<div><label>Report Type</label><select id="plType" onchange="renderPL()"><option value="all">All Time</option><option value="daily">Daily</option><option value="monthly">Monthly</option></select></div>
+<div><label>Date / Month</label><input id="plPeriod" type="text" inputmode="none" autocomplete="off" readonly class="sl-custom-date" onchange="renderPL()"></div>
+</div>
+<div id="plPeriodBox"></div>
+</div>
+<div class="card">
+<h3>🏆 Product Profit Summary</h3>
+<div id="productProfitBox"></div>
+</div>
+</section>
+
+
+<section id="dailyReport" class="page">
+<div class="card">
+<h2>📅 Complete Business Management</h2>
+<p class="muted">একটি নির্দিষ্ট দিনের বিক্রয়, ক্রয়, খরচ, লাভ, নগদ এবং স্টকের সংক্ষিপ্ত হিসাব।</p>
+<div class="grid">
+<div><label>Report Date</label><input id="drDate" type="text" inputmode="none" autocomplete="off" readonly class="sl-custom-date" onchange="renderDailyReport()"></div>
+</div>
+<div id="dailySummary"></div>
+</div>
+
+<div class="card">
+<h3>📊 Daily Sales / Purchase / Expense</h3>
+<div id="dailyDetails"></div>
+</div>
+
+<div class="card">
+<h3>💵 Cash Reconciliation</h3>
+<div id="dailyCash"></div>
+</div>
+
+<div class="card">
+<h3>📦 Stock Snapshot</h3>
+<div id="dailyStock"></div>
+</div>
+
+<div class="card">
+<button onclick="printDailyReport()">🖨️ Print Daily Report</button>
+</div>
+</section>
+
+
+<section id="returns" class="page">
+<div class="card"><h2>↩️ Sales Return</h2><p class="muted">বিক্রি করা পণ্য ফেরত এলে স্টক বাড়বে এবং নেট বিক্রয় কমবে।</p>
+<div class="grid"><div><label>Sales Invoice</label><select id="srInvoice" onchange="loadSalesReturnItems()"></select></div><div><label>Product</label><select id="srItem"></select></div><div><label>Return Quantity</label><input id="srQty" type="number" min="0.01" step="0.01"></div><div><label>Reason</label><input id="srReason" placeholder="যেমন: পণ্য নষ্ট / Customer Return"></div></div><br><button class="green" onclick="saveSalesReturn()">Save Sales Return</button><div id="salesReturnHistory"></div></div>
+<div class="card"><h2>↩️ Purchase Return</h2><p class="muted">সরবরাহকারীকে পণ্য ফেরত দিলে স্টক কমবে এবং নেট ক্রয় কমবে।</p>
+<div class="grid"><div><label>Purchase Entry</label><select id="prPurchase"></select></div><div><label>Return Quantity</label><input id="prQty" type="number" min="0.01" step="0.01"></div><div><label>Reason</label><input id="prReason" placeholder="যেমন: নষ্ট পণ্য / Supplier Return"></div></div><br><button class="green" onclick="savePurchaseReturn()">Save Purchase Return</button><div id="purchaseReturnHistory"></div></div>
+</section>
+
+<section id="userManagement" class="page">
+<div class="card">
+<h2>👥 User Management</h2>
+<p class="muted">Admin user যোগ/পরিবর্তন করতে পারবেন। এই V12-এর permission হলো Admin/User level access।</p>
+<div class="grid">
+<div><label>Username</label><input id="uName" placeholder="যেমন: staff"></div>
+<div><label>Password</label><input id="uPass" type="password"></div>
+<div><label>Role</label><select id="uRole"><option value="user">User</option><option value="admin">Admin</option></select></div>
+</div><br>
+<button class="green" onclick="saveUser()">Save User</button>
+<div id="userTable"></div>
+</div>
+<div class="card">
+<h3>🔑 Change My Password</h3>
+<div class="grid">
+<div><label>Current Password</label><input id="oldPass" type="password"></div>
+<div><label>New Password</label><input id="newPass" type="password"></div>
+</div><br>
+<button onclick="changeMyPassword()">Change Password</button>
+</div>
+</section>
+
+
+<section id="inventoryControl" class="page">
+  <div class="card">
+    <h2>📦 Advanced Inventory & Stock Control</h2>
+    <p>স্টক, Reorder Level, Warehouse, Batch/Lot, Expiry এবং Stock Movement এক জায়গা থেকে নিয়ন্ত্রণ করুন।</p>
+    <div class="v17-grid">
+      <div class="v17-stat">মোট Product<b id="v17Products">0</b></div>
+      <div class="v17-stat">মোট Stock<b id="v17Qty">0</b></div>
+      <div class="v17-stat">Stock Value<b id="v17Value">৳0.00</b></div>
+      <div class="v17-stat">Low/Reorder<b id="v17Low">0</b></div>
+      <div class="v17-stat">Expiry Alert<b id="v17Expiry">0</b></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>⚙️ Product Inventory Settings</h3>
+    <div class="v17-grid">
+      <div><label>Product</label><select id="v17Product"></select></div>
+      <div><label>Minimum Stock</label><input id="v17Min" type="number" step="0.01" min="0" placeholder="যেমন 5"></div>
+      <div><label>Reorder Level</label><input id="v17Reorder" type="number" step="0.01" min="0" placeholder="যেমন 10"></div>
+      <div><label>Warehouse / Location</label><input id="v17Warehouse" placeholder="যেমন Main Store"></div>
+      <div><label>Batch / Lot No.</label><input id="v17Batch" placeholder="যেমন B-001"></div>
+      <div><label>Expiry Date</label><input id="v17ExpiryDate" type="text" inputmode="none" autocomplete="off" readonly class="sl-custom-date"></div>
+    </div><br>
+    <div class="v17-actions"><button onclick="v17SaveMeta()">💾 Save Inventory Settings</button><button class="secondary" onclick="v17ClearMeta()">Clear</button></div>
+    <div id="v17MetaMsg"></div>
+  </div>
+
+  <div class="card">
+    <h3>🔄 Stock Movement</h3>
+    <div class="v17-grid">
+      <div><label>Product</label><select id="v17MoveProduct"></select></div>
+      <div><label>Movement Type</label><select id="v17MoveType"><option value="IN">Stock In (+)</option><option value="OUT">Stock Out (-)</option><option value="ADJUST">Adjustment (Actual Stock)</option></select></div>
+      <div><label>Quantity / Actual Stock</label><input id="v17MoveQty" type="number" step="0.01" min="0"></div>
+      <div><label>Reason</label><input id="v17MoveReason" placeholder="Purchase, Damage, Count, Transfer..."></div>
+      <div><label>Warehouse / Location</label><input id="v17MoveWarehouse" placeholder="Optional"></div>
+    </div><br>
+    <button onclick="v17MoveStock()">✅ Save Stock Movement</button>
+  </div>
+
+  <div class="card">
+    <h3>🚨 Stock & Expiry Alerts</h3>
+    <div id="v17Alerts">লোড হচ্ছে...</div>
+  </div>
+
+  <div class="card">
+    <h3>📋 Advanced Stock Report</h3>
+    <input id="v17Search" placeholder="🔎 Product / Warehouse / Batch খুঁজুন..." oninput="v17Render()">
+    <div id="v17Table"></div>
+  </div>
+
+  <div class="card">
+    <h3>🧾 Stock Movement History</h3>
+    <div id="v17History"></div>
+  </div>
+</section>
+</main>
+<section id="barcodeQR" class="page">
+<h2>📦 Barcode & QR System</h2>
+<div class="card">
+<h3>Product Code</h3>
+<label>Product</label><select id="v15Product" onchange="v15Load()"></select>
+<label>Barcode</label><input id="v15Barcode" placeholder="Enter barcode">
+<label>QR / Product Code</label><input id="v15QR" placeholder="e.g. SL-P001">
+<button onclick="v15Save()">💾 Save Code</button> <button onclick="v15QRGen()">🔳 Generate QR</button> <button onclick="v15Print()">🖨️ Print QR</button>
+<div id="v15QRBox" style="text-align:center;margin:15px 0"></div>
+</div>
+<div class="card"><h3>🔎 Search by Barcode / QR</h3><input id="v15Search" placeholder="Scan/type barcode or QR code" oninput="v15SearchCode()"><div id="v15Result"></div></div>
+<div class="card"><h3>📋 Product Codes</h3><div class="table-scroll"><table><thead><tr><th>Product</th><th>Barcode</th><th>QR Code</th><th>Stock</th></tr></thead><tbody id="v15Table"></tbody></table></div></div>
+</section>
+
+
+
+<section id="menuEditor" class="page">
+<div class="card"><h2>☰ Menu Edit & Add</h2>
+<p>এখান থেকে মেনুর নাম পরিবর্তন এবং নতুন মেনু যোগ করতে পারবেন। পরিবর্তনগুলো ফোনের এই ব্রাউজারেই সংরক্ষিত থাকবে।</p>
+<div class="grid">
+<div><label>যে Menu Edit করবেন</label><select id="meExisting"></select></div>
+<div><label>নতুন Menu Name</label><input id="meLabel" placeholder="যেমন: Sales Report"></div>
+</div><br>
+<button onclick="saveMenuLabel()">✏️ Edit Menu</button>
+<button class="secondary" onclick="resetMenuLabels()">↩️ Reset Menu Names</button>
+</div>
+<div class="card"><h3>➕ নতুন Menu Add</h3>
+<div class="grid">
+<div><label>Menu Name</label><input id="meNewLabel" placeholder="যেমন: Quick Sales"></div>
+<div><label>কোন Page খুলবে?</label><select id="meNewPage"></select></div>
+</div><br>
+<button class="green" onclick="addCustomMenu()">➕ Add Menu</button>
+<div id="customMenuList" style="margin-top:15px"></div>
+</div>
+</section>
+
+<section id="menuArrange" class="page">
+<div class="card"><h2>↕️ Menu সাজানো</h2><p>আপনার পছন্দমতো Menu-এর অবস্থান ঠিক করুন। ↑ ↓ চাপলে Menu উপরে/নিচে যাবে। পরিবর্তন Auto Save হবে।</p><div id="menuArrangeList"></div><br><button class="secondary" onclick="slResetMenuOrder()">↩️ Default Order</button></div>
+</section>
+
+<section id="settings" class="page">
+  <h2>⚙️ Business Profile & Settings</h2>
+  <div class="card">
+    <h3>🏢 Business Information</h3>
+    <label>Business Name</label>
+    <input id="setBizName" placeholder="Your Business Name">
+    <label>Owner / Manager Name</label>
+    <input id="setOwnerName" placeholder="Owner / Manager">
+    <label>Phone</label>
+    <input id="setPhone" placeholder="01XXXXXXXXX">
+    <label>Address</label>
+    <textarea id="setAddress" rows="2" placeholder="Business address"></textarea>
+    <label>Invoice Title</label>
+    <input id="setInvoiceTitle" placeholder="Sales Invoice / Cash Memo">
+    <label>Invoice Footer</label>
+    <textarea id="setInvoiceFooter" rows="2" placeholder="Thank you for your business"></textarea>
+    <label>Currency Symbol</label>
+    <input id="setCurrency" maxlength="5" placeholder="৳">
+    <label>Low Stock Alert (units)</label>
+    <input id="setLowStock" type="number" min="0" step="1" placeholder="5">
+
+    <div class="v16-logo-card">
+      <h3>🖼️ Business Logo</h3>
+      <p class="form-note">Logo দিলে Dashboard, Invoice এবং Print view-তে দেখা যাবে।</p>
+      <input id="v16LogoInput" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml">
+      <div class="v16-logo-preview-wrap"><img id="v16LogoPreview" class="v16-logo-preview" alt="Logo Preview"><span id="v16LogoEmpty">কোনো Logo দেওয়া হয়নি</span></div>
+      <button class="green" onclick="v16SaveLogo()">💾 Save Logo</button>
+      <button class="secondary" onclick="v16RemoveLogo()">🗑️ Remove Logo</button>
+    </div>
+
+    <button onclick="saveBusinessSettings()">💾 Save Settings</button>
+    <button onclick="resetBusinessSettings()">↩️ Reset Settings</button>
+  </div>
+
+  <div class="card sl-appearance-settings" style="margin-bottom:16px;">
+    <h3>💾 Backup &amp; Restore</h3>
+    <p class="muted">Smart Ledger-এর গুরুত্বপূর্ণ ডাটা নিরাপদে Backup রাখা এবং প্রয়োজন হলে Restore করার জন্য।</p>
+    <button class="green" type="button" onclick="showPage('backup')">💾 Open Backup &amp; Restore</button>
+  </div>
+
+  <div class="card sl-appearance-settings">
+    <h3>🎨 App Appearance / Phone Style Settings</h3>
+    <p class="form-note">আপনার ফোনের মতো করে Smart Ledger-এর রঙ, থিম, লেখা ও ফন্ট নিজের মতো পরিবর্তন করতে পারবেন।</p>
+    <div class="grid">
+      <div><label>Theme / Mode</label><select id="slThemeMode" onchange="slPreviewAppearance()">
+        <option value="softpink">🌸 Soft Pink</option><option value="lavender">💜 Light Purple</option><option value="day">☀️ Day / Light</option><option value="night">🌙 Night</option><option value="dark">🌑 Dark</option>
+      </select></div>
+      <div><label>Font Size</label><select id="slFontSize" onchange="slPreviewAppearance()"><option value="small">Small</option><option value="normal">Normal</option><option value="large">Large</option><option value="xlarge">Extra Large</option></select></div>
+      <div><label>Font Style</label><select id="slFontFamily" onchange="slPreviewAppearance()"><option value="system">System / Clean</option><option value="bangla">Noto Sans Bengali</option><option value="serif">Classic Serif</option><option value="rounded">Rounded</option></select></div>
+      <div><label>Text Color</label><select id="slTextTone" onchange="slPreviewAppearance()"><option value="dark">Black / Dark</option><option value="soft">Soft Dark</option><option value="white">White (Dark Theme)</option></select></div>
+      <div><label>Button / Accent Color</label><select id="slAccent" onchange="slPreviewAppearance()"><option value="pink">🌸 Soft Pink</option><option value="purple">💜 Light Purple</option><option value="blue">🔵 Blue</option><option value="green">🟢 Green</option><option value="orange">🟠 Orange</option></select></div>
+      <div><label>Dashboard Number Size</label><select id="slNumberSize" onchange="slPreviewAppearance()"><option value="normal">Normal</option><option value="large">Large</option><option value="xlarge">Extra Large</option></select></div>
+      <div><label>Card Corner</label><select id="slRadius" onchange="slPreviewAppearance()"><option value="soft">Soft</option><option value="round">Round</option><option value="square">Square</option></select></div>
+      <div><label>Interface Density</label><select id="slDensity" onchange="slPreviewAppearance()"><option value="comfortable">Comfortable</option><option value="compact">Compact</option><option value="spacious">Spacious</option></select></div>
+    </div>
+    <div class="sl-color-palette" aria-label="Quick color choices">
+      <button type="button" class="sl-palette pink" onclick="slSetAccent('pink')">Pink</button>
+      <button type="button" class="sl-palette purple" onclick="slSetAccent('purple')">Purple</button>
+      <button type="button" class="sl-palette blue" onclick="slSetAccent('blue')">Blue</button>
+      <button type="button" class="sl-palette green" onclick="slSetAccent('green')">Green</button>
+      <button type="button" class="sl-palette orange" onclick="slSetAccent('orange')">Orange</button>
+    </div>
+    <div class="sl-appearance-actions">
+      <button class="green" onclick="saveAppearanceSettings()">💾 Save Appearance</button>
+      <button class="secondary" onclick="resetAppearanceSettings()">↩️ Reset Appearance</button>
+    </div>
+    <p id="slAppearanceStatus" class="muted"></p>
+  </div>
+
+  <div class="card">
+    <h3>🧾 Invoice Preview</h3>
+    <div id="invoicePreview" style="border:1px solid #ccc;padding:15px;border-radius:8px;background:#fff">
+      <img id="slPreviewLogo" class="v16-preview-logo" alt="Logo">
+      <h2 id="previewBizName">Business Name</h2>
+      <div id="previewOwner"></div>
+      <div id="previewPhone"></div>
+      <div id="previewAddress"></div>
+      <hr>
+      <strong id="previewTitle">Sales Invoice / Cash Memo</strong>
+      <p style="margin-bottom:0" id="previewFooter">Thank you for your business</p>
+    </div>
+  </div>
+</section>
+
+
+<section id="advancedReports" class="page">
+  <h2>📊 Advanced Reports</h2>
+  <div class="card">
+    <h3>📅 Report Period</h3>
+    <label>From Date</label>
+    <input id="advFrom" type="text" inputmode="none" autocomplete="off" readonly class="sl-custom-date">
+    <label>To Date</label>
+    <input id="advTo" type="text" inputmode="none" autocomplete="off" readonly class="sl-custom-date">
+    <button onclick="generateAdvancedReport()">🔎 Generate Report</button>
+    <button onclick="printAdvancedReport()">🖨️ Print Report</button>
+  </div>
+
+  <div id="advReportArea">
+    <div class="card">
+      <h3>📈 Business Summary</h3>
+      <div id="advSummary" class="grid">
+        <div><b>Sales</b><br><span id="advSales">৳0</span></div>
+        <div><b>Purchase</b><br><span id="advPurchase">৳0</span></div>
+        <div><b>Expense</b><br><span id="advExpense">৳0</span></div>
+        <div><b>Gross Profit</b><br><span id="advGross">৳0</span></div>
+        <div><b>Net Profit</b><br><span id="advNet">৳0</span></div>
+        <div><b>Profit Margin</b><br><span id="advMargin">0%</span></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>👤 Customer-wise Sales</h3>
+      <div id="advCustomerTable"></div>
+    </div>
+
+    <div class="card">
+      <h3>📦 Product-wise Sales & Profit</h3>
+      <div id="advProductTable"></div>
+    </div>
+
+    <div class="card">
+      <h3>💳 Daily Sales / Purchase / Expense</h3>
+      <div id="advDailyTable"></div>
+    </div>
+  </div>
+</section>
+
+<script>
+const K={products:'sl_products',customers:'sl_customers',sales:'sl_sales',purchase:'sl_purchase',expense:'sl_expense'};
+let products=load(K.products),customers=load(K.customers),sales=load(K.sales),purchases=load(K.purchase),expenses=load(K.expense),adjustments=load('sl_adjustments'),suppliers=load('sl_suppliers'),purchaseInvoices=load('sl_purchase_invoices');
+let salesReturns=load('sl_sales_returns'),purchaseReturns=load('sl_purchase_returns');
+let editProductId=null,editCustomerId=null,invoiceItems=[],previewInvoiceNumber="";
+
+function load(k){try{return JSON.parse(localStorage.getItem(k)||'[]')}catch(e){return[]}}
+function save(k,v){localStorage.setItem(k,JSON.stringify(v))}
+function money(n){let c=(window.slBusinessSettings&&window.slBusinessSettings.currency)||'৳';return c+Number(n||0).toFixed(2)}
+function id(){return Date.now()+Math.floor(Math.random()*1000)}
+function today(){let d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function showPage(x){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.getElementById(x).classList.add('active');refreshAll()}
+function clearProduct(){editProductId=null;['pName','pBuy','pSell','pStock'].forEach(x=>document.getElementById(x).value='')}
+function saveProduct(){
+let name=pName.value.trim(),buy=+pBuy.value||0,sell=+pSell.value||0,stock=+pStock.value||0;if(!name)return alert('পণ্যের নাম দিন');
+if(editProductId){let p=products.find(x=>x.id===editProductId);if(!p)return;Object.assign(p,{name,buy,sell,stock,active:p.active!==false})}
+else products.push({id:id(),name,buy,sell,stock,active:true});
+save(K.products,products);const savedProductName=name;clearProduct();refreshAll();slProductSaved(savedProductName)
+}
+function renderProducts(){
+let q=(productSearch.value||'').toLowerCase();let a=products.filter(p=>p.name.toLowerCase().includes(q));
+productTable.innerHTML='<table><tr><th>পণ্য</th><th>ক্রয়</th><th>বিক্রয়</th><th>স্টক</th><th>Status</th><th>Action</th></tr>'+
+a.map(p=>`<tr class="${p.stock<=5?'low':''}"><td>${esc(p.name)}</td><td>${money(p.buy)}</td><td>${money(p.sell)}</td><td>${p.stock}</td><td>${p.active===false?'Inactive':'Active'}</td><td><button onclick="editProduct(${p.id})">Edit</button> <button class="danger" onclick="deleteProduct(${p.id})">Delete</button> <button class="${p.active===false?'green':'danger'}" onclick="toggleProduct(${p.id})">${p.active===false?'Active':'Inactive'}</button></td></tr>`).join('')+'</table>'
+}
+function editProduct(i){let p=products.find(x=>x.id===i);if(!p)return;editProductId=i;pName.value=p.name;pBuy.value=p.buy;pSell.value=p.sell;pStock.value=p.stock;window.scrollTo(0,0)}
+function deleteProduct(i){let p=products.find(x=>x.id===i);if(!p)return;if(sales.some(s=>s.items?.some(x=>x.productId===i))||purchases.some(x=>x.productId===i)){return alert('এই পণ্যের Sales/Purchase history আছে। তাই Delete না করে Inactive করুন।')}slConfirm('এই Product স্থায়ীভাবে Delete করবেন?',()=>{products=products.filter(x=>x.id!==i);save(K.products,products);clearProduct();refreshAll()},'Delete Product')}
+function toggleProduct(i){let p=products.find(x=>x.id===i);if(!p)return;p.active=p.active===false;save(K.products,products);refreshAll()}
+function clearCustomer(){editCustomerId=null;['cName','cPhone','cAddress'].forEach(x=>document.getElementById(x).value='')}
+function saveCustomer(){let name=cName.value.trim();if(!name)return alert('Customer Name দিন');if(editCustomerId){let c=customers.find(x=>x.id===editCustomerId);Object.assign(c,{name,phone:cPhone.value,address:cAddress.value})}else customers.push({id:id(),name,phone:cPhone.value,address:cAddress.value});save(K.customers,customers);clearCustomer();refreshAll()}
+function renderCustomers(){let q=(document.getElementById('customerSearch')?.value||'').toLowerCase().trim();let list=customers.filter(c=>String(c.name||'').toLowerCase().includes(q)||String(c.phone||'').toLowerCase().includes(q)||String(c.address||'').toLowerCase().includes(q));customerTable.innerHTML='<table><tr><th>নাম</th><th>মোবাইল</th><th>ঠিকানা</th><th>Action</th></tr>'+list.map(c=>`<tr><td>${esc(c.name)}</td><td>${esc(c.phone)}</td><td>${esc(c.address)}</td><td><button onclick="editCustomer(${c.id})">Edit</button> <button class="danger" onclick="deleteCustomer(${c.id})">Delete</button></td></tr>`).join('')+'</table>'}
+function editCustomer(i){let c=customers.find(x=>x.id===i);if(!c)return;editCustomerId=i;cName.value=c.name;cPhone.value=c.phone;cAddress.value=c.address}
+function deleteCustomer(i){let c=customers.find(x=>x.id===i);if(!c)return;if(sales.some(s=>String(s.customerId)===String(i))){return alert('এই Customer-এর Sales history আছে। তাই Delete করা যাবে না।')}slConfirm('এই Customer স্থায়ীভাবে Delete করবেন?',()=>{customers=customers.filter(x=>x.id!==i);save(K.customers,customers);clearCustomer();refreshAll()},'Delete Customer')}
+function invoiceNumber(){return 'INV-'+new Date().getFullYear()+'-'+String(sales.length+1).padStart(4,'0')}
+function newInvoice(){invoiceItems=[];previewInvoiceNumber="";invDate.value=today();invoiceNo.textContent='Invoice No: '+invoiceNumber();invCustomer.value='';invPhone.value='';invAddress.value='';invProduct.value='';invStock.value='';invQty.value='';invPrice.value='';invLineTotal.value='';if(document.getElementById('invPaymentType'))document.getElementById('invPaymentType').value='cash';if(document.getElementById('invPaid'))document.getElementById('invPaid').value='0';if(document.getElementById('invDue'))document.getElementById('invDue').value='0.00';renderInvoiceItems();invoicePaymentCalc()}
+function populateSelects(){
+invCustomer.innerHTML='<option value="">Customer select</option>'+customers.map(c=>`<option value="${c.id}">${esc(c.name)} - ${esc(c.phone)}</option>`).join('');
+let active=products.filter(p=>p.active!==false);let opts='<option value="">Product select</option>'+active.map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join('');
+invProduct.innerHTML=opts;puProduct.innerHTML=opts
+}
+function customerInfo(){let c=customers.find(x=>x.id==invCustomer.value);invPhone.value=c?.phone||'';invAddress.value=c?.address||''}
+function productInfo(){let p=products.find(x=>x.id==invProduct.value);invStock.value=p?.stock??'';invPrice.value=p?.sell??'';invoiceCalc()}
+function invoiceCalc(){invLineTotal.value=((+invQty.value||0)*(+invPrice.value||0)).toFixed(2)}
+function addInvoiceItem(){let p=products.find(x=>x.id==invProduct.value),q=+invQty.value||0,price=+invPrice.value||0;if(!p||q<=0)return alert('পণ্য ও সঠিক Quantity দিন');if(q>p.stock)return alert('স্টকের চেয়ে বেশি বিক্রি করা যাবে না');invoiceItems.push({productId:p.id,name:p.name,qty:q,price,total:q*price});invProduct.value='';invStock.value='';invQty.value='';invPrice.value='';invLineTotal.value='';renderInvoiceItems()}
+function renderInvoiceItems(){invoiceItemsDiv.innerHTML='';let t=document.createElement('table');t.innerHTML='<tr><th>পণ্য</th><th>Qty</th><th>Rate</th><th>Total</th><th></th></tr>';invoiceItems.forEach((x,i)=>{let r=t.insertRow();r.innerHTML=`<td>${esc(x.name)}</td><td>${x.qty}</td><td>${money(x.price)}</td><td>${money(x.total)}</td><td><button class="danger" onclick="invoiceItems.splice(${i},1);renderInvoiceItems()">X</button></td>`});invoiceItemsDiv.appendChild(t);invTotal.textContent=money(invoiceItems.reduce((s,x)=>s+x.total,0));if(typeof invoicePaymentCalc==='function')invoicePaymentCalc()}
+function invoicePaymentCalc(){
+  const total=invoiceItems.reduce((a,x)=>a+(Number(x.total)||0),0);
+  const type=document.getElementById('invPaymentType')?.value||'cash';
+  const pi=document.getElementById('invPaid'),di=document.getElementById('invDue');
+  let paid=pi&&pi.value.trim()!==''?Number(pi.value):0;
+  if(type==='cash') paid=total;
+  else if(type==='due') paid=0;
+  else paid=Math.min(Math.max(Number.isFinite(paid)?paid:0,0),total);
+  const due=Math.max(0,total-paid);
+  // Keep the partial-payment input editable while the user types; formatting it on every keystroke breaks manual entry on mobile.
+  if(pi && type!=='partial') pi.value=paid.toFixed(2);
+  if(di) di.value=due.toFixed(2);
+}
+function saveInvoice(){
+if(!invDate.value)invDate.value=today();if(!invoiceItems.length)return alert('কমপক্ষে একটি পণ্য যোগ করুন');
+let cid=invCustomer.value||'',c=customers.find(x=>x.id==cid),total=invoiceItems.reduce((s,x)=>s+x.total,0),type=document.getElementById('invPaymentType')?.value||'cash';
+let paid=+document.getElementById('invPaid')?.value||0;if(type==='cash')paid=total;if(type==='due')paid=0;paid=Math.min(Math.max(paid,0),total);let due=total-paid;
+if(due>0&&!cid)return alert('বাকী রাখতে Customer নির্বাচন করুন');
+for(let x of invoiceItems){let p=products.find(z=>z.id===x.productId);if(!p||x.qty>p.stock)return alert('স্টক পরিবর্তিত হয়েছে, আবার যাচাই করুন')}
+invoiceItems.forEach(x=>{let p=products.find(z=>z.id===x.productId);p.stock-=x.qty});
+previewInvoiceNumber=invoiceNumber();sales.push({id:id(),invoice:previewInvoiceNumber,date:invDate.value,customerId:cid,customerName:c?.name||'Cash Customer',phone:c?.phone||'',items:invoiceItems,total,paid,due,payment:due<=0.000001?'Cash':paid<=0?'Due':'Partial'});
+save(K.products,products);save(K.sales,sales);let savedItems=invoiceItems.slice(),savedCustomer=invCustomer.value,savedDate=invDate.value,savedPaid=+document.getElementById('invPaid')?.value||0,savedDue=+document.getElementById('invDue')?.value||0;refreshAll();slConfirm('Invoice saved successfully. এখন কি Invoice Preview / Print করবেন?',()=>{invoiceItems=savedItems;invCustomer.value=savedCustomer;invDate.value=savedDate;let pi=document.getElementById('invPaid'),di=document.getElementById('invDue');if(pi)pi.value=savedPaid.toFixed(2);if(di)di.value=savedDue.toFixed(2);renderInvoiceItems();showInvoicePreview();},'Invoice Saved',()=>{newInvoice();refreshAll()})
+}
+function slPrintInvoicePreview(){document.body.classList.remove('sl-print-saved-invoice');document.body.classList.add('sl-print-invoice-preview');window.print();setTimeout(()=>document.body.classList.remove('sl-print-invoice-preview'),1200)}
+function slPrintSavedInvoice(){document.body.classList.remove('sl-print-invoice-preview');document.body.classList.add('sl-print-saved-invoice');window.print();setTimeout(()=>document.body.classList.remove('sl-print-saved-invoice'),1200)}
+function printInvoice(){showInvoicePreview()}
+function showInvoicePreview(){let modal=document.getElementById('slInvoicePreviewModal');if(!modal){modal=document.createElement('div');modal.id='slInvoicePreviewModal';modal.className='sl-modal';modal.innerHTML='<div class="sl-modal-card"><div id="slInvoicePreview"></div><div id="slInvoicePreviewActions" style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px"><button class="green" onclick="slPrintInvoicePreview()">🖨️ Print</button><button class="secondary" onclick="document.getElementById(&quot;slInvoicePreviewModal&quot;).classList.remove(&quot;open&quot;)">Close</button></div></div>';document.body.appendChild(modal)}let total=invoiceItems.reduce((a,x)=>a+x.total,0),cid=invCustomer.value,c=customers.find(x=>x.id==cid);document.getElementById('slInvoicePreview').innerHTML='<div class="sl-invoice-preview"><h2>Smart Ledger — Invoice Preview</h2><div class="meta"><span>Invoice: '+esc(previewInvoiceNumber||invoiceNumber())+'</span><span>Date: '+esc(invDate.value||today())+'</span></div><p><b>Customer:</b> '+esc(c?.name||'Cash Customer')+'<br><b>Mobile:</b> '+esc(c?.phone||'')+'</p><table><tr><th>Product</th><th>Qty</th><th>Rate</th><th>Total</th></tr>'+invoiceItems.map(x=>'<tr><td>'+esc(x.name)+'</td><td>'+x.qty+'</td><td>'+money(x.price)+'</td><td>'+money(x.total)+'</td></tr>').join('')+'</table><div class="totals"><div><span>Total</span><b>'+money(total)+'</b></div><div><span>Paid</span><b>'+money(+document.getElementById('invPaid')?.value||0)+'</b></div><div><span>Due</span><b>'+money(+document.getElementById('invDue')?.value||0)+'</b></div></div></div>';invoicePaymentCalc();modal.classList.add('open')}
+
+function renderSales(){salesTable.innerHTML='<table><tr><th>Invoice</th><th>Date</th><th>Customer</th><th>Items</th><th>Total</th><th>Payment</th></tr>'+sales.slice().reverse().map(s=>`<tr><td>${s.invoice}</td><td>${s.date}</td><td>${esc(s.customerName)}</td><td>${s.items.length}</td><td>${money(s.total)}</td><td>${s.payment}</td></tr>`).join('')+'</table>'}
+function savePurchase(){let p=products.find(x=>x.id==puProduct.value),q=+puQty.value||0,price=+puPrice.value||0;if(!p||q<=0)return alert('পণ্য ও Quantity দিন');p.stock=(+p.stock||0)+q;p.buy=price||p.buy;purchases.push({id:id(),date:today(),productId:p.id,name:p.name,qty:q,price,total:q*price});save(K.products,products);save(K.purchase,purchases);puQty.value='';puPrice.value='';refreshAll()}
+function renderPurchases(){purchaseTable.innerHTML='<table><tr><th>Date</th><th>Product</th><th>Qty</th><th>Rate</th><th>Total</th></tr>'+purchases.slice().reverse().map(x=>`<tr><td>${x.date}</td><td>${esc(x.name)}</td><td>${x.qty}</td><td>${money(x.price)}</td><td>${money(x.total)}</td></tr>`).join('')+'</table>'}
+function saveExpense(){let name=eName.value.trim(),amount=+eAmount.value||0;if(!name||amount<=0)return alert('খরচের নাম ও Amount দিন');let date=today();expenses.push({id:id(),date,name,amount});save(K.expense,expenses);cashMovements=Array.isArray(cashMovements)?cashMovements:[];cashMovements.push({id:id(),date,type:'out',category:'Expense',amount,note:name});save('sl_cash_movements',cashMovements);eName.value='';eAmount.value='';refreshAll();renderCashBook()}
+function renderExpenses(){expenseTable.innerHTML='<table><tr><th>Date</th><th>খরচ</th><th>Amount</th></tr>'+expenses.slice().reverse().map(x=>`<tr><td>${x.date}</td><td>${esc(x.name)}</td><td>${money(x.amount)}</td></tr>`).join('')+'</table>'}
+function totals(){
+let rt=returnTotals();
+let salesTotal=sales.reduce((a,x)=>a+(+x.total||0),0)-rt.sr;
+let purchaseTotal=purchases.reduce((a,x)=>a+(+x.total||0),0)-rt.pr;
+let expenseTotal=expenses.reduce((a,x)=>a+(+x.amount||0),0);
+let paidSales=sales.reduce((a,x)=>a+(x.paid===undefined?(x.payment==='Cash'?(+x.total||0):0):(+x.paid||0)),0)-rt.sr;
+let purchaseCash=purchases.reduce((a,x)=>a+(+x.total||0),0)-rt.pr;
+let bankTotal=bankDeposits.reduce((a,x)=>a+(+x.amount||0),0);
+let cash=paidSales-purchaseCash-expenseTotal-bankTotal;
+let stock=products.reduce((a,x)=>a+(+x.stock||0),0);
+let profit=salesTotal-purchaseTotal-expenseTotal;
+return{s:salesTotal,p:purchaseTotal,e:expenseTotal,stock,cash,profit};}
+function refreshDashboard(){let t=totals();dSales.textContent=money(t.s);dPurchase.textContent=money(t.p);dExpense.textContent=money(t.e);dProfit.textContent=money(t.profit);dCash.textContent=money(t.cash);dStock.textContent=t.stock;cashValue.textContent=money(t.cash);if(document.getElementById('bankValue'))document.getElementById('bankValue').textContent=money(t.bank||0);let bankEl=document.getElementById('bankValue');if(bankEl)bankEl.textContent=money(bankDeposits.reduce((a,x)=>a+(+x.amount||0),0));let threshold=(window.slBusinessSettings&&Number.isFinite(Number(window.slBusinessSettings.lowStock)))?Number(window.slBusinessSettings.lowStock):5;let low=products.filter(p=>p.active!==false&&Number(p.stock||0)<=threshold);lowStock.innerHTML=low.length?low.map(p=>`<div>⚠️ ${esc(p.name)} — Stock: ${p.stock}</div>`).join(''):'কোনো কম স্টক নেই।'}
+function refreshReports(){let t=totals();reportBox.innerHTML=`<p>মোট বিক্রয়: <b>${money(t.s)}</b></p><p>মোট ক্রয়: <b>${money(t.p)}</b></p><p>মোট খরচ: <b>${money(t.e)}</b></p><p>নিট/আনুমানিক লাভ: <b>${money(t.profit)}</b></p><p>বর্তমান ক্যাশ: <b>${money(t.cash)}</b></p><p>Customer: <b>${customers.length}</b></p><p>Invoice: <b>${sales.length}</b></p>`}
+function esc(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
+
+function getPeriodData(type,period){
+let matchDate=s=>type==='daily'?s.date===period:s.date&&s.date.slice(0,7)===period;
+let ss=sales.filter(matchDate), pp=purchases.filter(matchDate), ee=expenses.filter(matchDate), sr=salesReturns.filter(matchDate), pr=purchaseReturns.filter(matchDate);
+let salesTotal=ss.reduce((a,x)=>a+x.total,0)-sr.reduce((a,x)=>a+x.total,0), purchaseTotal=pp.reduce((a,x)=>a+x.total,0)-pr.reduce((a,x)=>a+x.total,0), expenseTotal=ee.reduce((a,x)=>a+x.amount,0);
+return {ss,pp,ee,salesTotal,purchaseTotal,expenseTotal,profit:salesTotal-purchaseTotal-expenseTotal};
+}
+function renderPeriodReport(){
+let type=document.getElementById('reportType')?.value||'daily', el=document.getElementById('reportPeriod');
+if(!el)return;
+let period=el.value||today(), d=getPeriodData(type,period), box=document.getElementById('periodReport');
+if(!box)return;
+box.innerHTML=`<div class="card"><h3>${type==='daily'?'Daily':'Monthly'} Summary: ${period}</h3>
+<div class="grid"><div class="stat">বিক্রয়<b>${money(d.salesTotal)}</b></div><div class="stat">ক্রয়<b>${money(d.purchaseTotal)}</b></div><div class="stat">খরচ<b>${money(d.expenseTotal)}</b></div><div class="stat">লাভ<b>${money(d.profit)}</b></div></div>
+<p>Invoice: <b>${d.ss.length}</b> | Purchase: <b>${d.pp.length}</b> | Expense: <b>${d.ee.length}</b></p>
+${d.ss.length?'<h4>Sales</h4><table><tr><th>Invoice</th><th>Customer</th><th>Total</th></tr>'+d.ss.map(s=>`<tr><td>${s.invoice}</td><td>${esc(s.customerName)}</td><td>${money(s.total)}</td></tr>`).join('')+'</table>':''}
+${d.pp.length?'<h4>Purchase</h4><table><tr><th>Product</th><th>Qty</th><th>Total</th></tr>'+d.pp.map(s=>`<tr><td>${esc(s.name)}</td><td>${s.qty}</td><td>${money(s.total)}</td></tr>`).join('')+'</table>':''}
+${d.ee.length?'<h4>Expense</h4><table><tr><th>খরচ</th><th>Amount</th></tr>'+d.ee.map(s=>`<tr><td>${esc(s.name)}</td><td>${money(s.amount)}</td></tr>`).join('')+'</table>':''}</div>`;
+}
+function downloadBackup(){
+try{
+let data={app:'Smart Ledger',version:'1.0',createdAt:new Date().toISOString(),products,customers,sales,purchases,expenses,adjustments,suppliers,purchaseInvoices,cashClosings,cashMovements,bankDeposits,users,businessSettings:window.getBusinessSettingsForBackup?window.getBusinessSettingsForBackup():null,logoV16:localStorage.getItem('sl_business_logo_v16')||'',salesReturns,purchaseReturns};
+let textData=JSON.stringify(data,null,2),box=document.getElementById('slSafeBackupBox');
+if(!box){box=document.createElement('div');box.id='slSafeBackupBox';box.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:100000;display:flex;align-items:center;justify-content:center;padding:16px';box.innerHTML='<div style="background:#fff;width:min(700px,100%);max-height:90vh;border-radius:18px;padding:18px;box-shadow:0 15px 50px rgba(0,0,0,.3)"><h3 style="margin-top:0">💾 Smart Ledger Backup</h3><p style="color:#475569">Backup তৈরি হয়েছে। <b>Copy Backup</b> চাপুন এবং কপি করা লেখা নিরাপদ জায়গায় রাখুন।</p><textarea id="slSafeBackupText" readonly style="width:100%;height:260px;box-sizing:border-box;padding:10px;border:1px solid #cbd5e1;border-radius:10px;font-size:12px;background:#f8fafc"></textarea><div style="display:flex;gap:10px;justify-content:flex-end;margin-top:12px"><button type="button" id="slSafeBackupCopy" class="green">📋 Copy Backup</button><button type="button" id="slSafeBackupClose" class="secondary">Close</button></div><div id="slSafeBackupStatus" style="margin-top:8px;font-weight:700"></div></div>';document.body.appendChild(box);document.getElementById('slSafeBackupClose').onclick=()=>box.remove();document.getElementById('slSafeBackupCopy').onclick=async()=>{let ta=document.getElementById('slSafeBackupText');ta.focus();ta.select();let ok=false;try{ok=!!(await navigator.clipboard?.writeText(textData));}catch(e){}if(!ok)try{ok=document.execCommand('copy')}catch(e){}document.getElementById('slSafeBackupStatus').textContent=ok?'✅ Backup Text copied.':'⚠️ Copy হয়নি—Text select করে Copy করুন.';};}
+document.getElementById('slSafeBackupText').value=textData;box.style.display='flex';
+}catch(e){alert('Backup তৈরি করা যায়নি: '+(e.message||e));}}
+
+function restoreBackup(event){
+let file=event.target.files[0];if(!file)return;
+let reader=new FileReader();
+reader.onload=()=>{
+try{
+let d=JSON.parse(reader.result);
+if(!d||!Array.isArray(d.products)||!Array.isArray(d.customers)||!Array.isArray(d.sales)||!Array.isArray(d.purchases)||!Array.isArray(d.expenses))throw new Error('invalid');
+if(!confirm('বর্তমান ডাটা Backup ডাটা দিয়ে Replace হবে। নিশ্চিত?'))return;
+products=d.products;customers=d.customers;sales=d.sales;purchases=d.purchases;expenses=d.expenses;
+adjustments=Array.isArray(d.adjustments)?d.adjustments:[];suppliers=Array.isArray(d.suppliers)?d.suppliers:[];purchaseInvoices=Array.isArray(d.purchaseInvoices)?d.purchaseInvoices:[];
+cashClosings=Array.isArray(d.cashClosings)?d.cashClosings:[];cashMovements=Array.isArray(d.cashMovements)?d.cashMovements:[];bankDeposits=Array.isArray(d.bankDeposits)?d.bankDeposits:[];
+if(Array.isArray(d.users)&&d.users.length)users=d.users;salesReturns=Array.isArray(d.salesReturns)?d.salesReturns:[];purchaseReturns=Array.isArray(d.purchaseReturns)?d.purchaseReturns:[];
+save(K.products,products);save(K.customers,customers);save(K.sales,sales);save(K.purchase,purchases);save(K.expense,expenses);save('sl_adjustments',adjustments);save('sl_suppliers',suppliers);save('sl_purchase_invoices',purchaseInvoices);save('sl_cash_closings',cashClosings);save('sl_cash_movements',cashMovements);save('sl_bank_deposits',bankDeposits);save('sl_sales_returns',salesReturns);save('sl_purchase_returns',purchaseReturns);if(Array.isArray(d.users)&&d.users.length)save('sl_users',users);
+if(d.businessSettings)localStorage.setItem('sl_business_settings',JSON.stringify(d.businessSettings));
+if(d.logoV16)localStorage.setItem('sl_business_logo_v16',d.logoV16);else localStorage.removeItem('sl_business_logo_v16');
+if(typeof loadBusinessSettings==='function')loadBusinessSettings();
+refreshAll();alert('Backup Restore সফল হয়েছে.');
+}catch(e){alert('Backup ফাইল সঠিক নয়।');}
+event.target.value='';
+};
+reader.readAsText(file);
+}
+
+
+function viewSavedInvoice(saleId){
+let s=sales.find(x=>String(x.id)===String(saleId));
+if(!s)return alert('Invoice পাওয়া যায়নি।');
+let modal=document.getElementById('slSavedInvoiceModal');
+if(!modal){
+ modal=document.createElement('div');modal.id='slSavedInvoiceModal';modal.className='sl-modal';
+ modal.innerHTML='<div class="sl-modal-card"><div id="slSavedInvoicePreview"></div><div class="no-print" style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px"><button class="green" onclick="slPrintSavedInvoice()">🖨️ Print</button><button class="secondary" onclick="document.getElementById(\'slSavedInvoiceModal\').classList.remove(\'open\')">Close</button></div></div>';
+ document.body.appendChild(modal);
+}
+let c=customers.find(x=>String(x.id)===String(s.customerId));
+let total=+s.total||0;
+let paid=s.paid!==undefined?(+s.paid||0):(s.due!==undefined?Math.max(0,total-(+s.due||0)):(s.payment==='Cash'?total:0));
+let due=Math.max(0,total-paid),items=s.items||[];
+document.getElementById('slSavedInvoicePreview').innerHTML='<div class="sl-invoice-preview"><h2>Smart Ledger — Saved Invoice</h2><div class="meta"><span>Invoice: '+esc(s.invoice||'')+'</span><span>Date: '+esc(s.date||'')+'</span></div><p><b>Customer:</b> '+esc(c?.name||s.customerName||'Cash Customer')+'<br><b>Mobile:</b> '+esc(c?.phone||s.phone||'')+'<br><b>Payment:</b> '+esc(s.payment||'Cash')+'</p><table><tr><th>Product</th><th>Qty</th><th>Rate</th><th>Total</th></tr>'+items.map(x=>'<tr><td>'+esc(x.name)+'</td><td>'+x.qty+'</td><td>'+money(x.price)+'</td><td>'+money(x.total)+'</td></tr>').join('')+'</table><div class="totals"><div><span>Total</span><b>'+money(s.total)+'</b></div><div><span>Paid</span><b>'+money(paid)+'</b></div><div><span>Due</span><b>'+money(due)+'</b></div></div></div>';
+modal.classList.add('open');modal.setAttribute('aria-hidden','false');
+}
+function salePaidAmount(s){
+  const total=Math.max(0,Number(s&&s.total)||0);
+  if(s&&s.paid!==undefined&&s.paid!==null&&s.paid!=='') return Math.min(total,Math.max(0,Number(s.paid)||0));
+  if(s&&s.due!==undefined&&s.due!==null&&s.due!=='') return Math.min(total,Math.max(0,total-(Number(s.due)||0)));
+  return s&&String(s.payment||'').toLowerCase()==='cash'?total:0;
+}
+function saleDueAmount(s){return Math.max(0,(Number(s&&s.total)||0)-salePaidAmount(s));}
+
+function renderCustomerReport(){
+let sel=document.getElementById('crCustomer'),box=document.getElementById('customerReportBox');
+if(!sel||!box)return;
+let old=sel.value;sel.innerHTML='<option value="">Customer select</option>'+customers.map(c=>`<option value="${c.id}">${esc(c.name)} - ${esc(c.phone)}</option>`).join('');if(old)sel.value=old;
+let cid=sel.value;if(!cid){box.innerHTML='<p class="muted">একজন Customer নির্বাচন করুন।</p>';return;}
+let c=customers.find(x=>String(x.id)===String(cid)),rows=sales.filter(s=>String(s.customerId)===String(cid));
+let total=rows.reduce((a,s)=>a+(+s.total||0),0),paid=rows.reduce((a,s)=>a+salePaidAmount(s),0),due=rows.reduce((a,s)=>a+saleDueAmount(s),0),qty=rows.reduce((a,s)=>a+(s.items||[]).reduce((b,i)=>b+(+i.qty||0),0),0);
+let html='<div class="sl-customer-summary"><div class="grid"><div class="stat">Customer<b>'+esc(c?.name||'')+'</b></div><div class="stat">মোট Invoice<b>'+rows.length+'</b></div><div class="stat">মোট পণ্য<b>'+qty+'</b></div><div class="stat">মোট বিক্রয়<b>'+money(total)+'</b></div><div class="stat">পরিশোধ<b>'+money(paid)+'</b></div><div class="stat">বাকী<b>'+money(due)+'</b></div></div></div>';
+if(rows.length){
+ html+='<div class="sl-customer-invoices"><h3>🧾 '+esc(c?.name||'Customer')+' — Invoice / Memo History</h3><p class="muted">প্রতিটি মেমোর বিস্তারিত দেখতে <b>👁️ View Memo</b> চাপুন।</p><div class="report-scroll"><table><tr><th>Invoice / Memo</th><th>Date</th><th>Product Details</th><th>Total</th><th>Paid</th><th>Due</th><th>Status</th><th>Action</th></tr>';
+ html+=rows.slice().reverse().map(s=>{let pd=salePaidAmount(s),du=saleDueAmount(s),items=(s.items||[]).map(i=>esc(i.name)+' × '+i.qty+' @ '+money(i.price)).join('<br>');return '<tr><td><b>'+esc(s.invoice||'-')+'</b></td><td>'+esc(s.date||'-')+'</td><td>'+ (items||'-') +'</td><td>'+money(s.total)+'</td><td>'+money(pd)+'</td><td>'+money(du)+'</td><td><b>'+ (du>0?'Due':'Paid') +'</b></td><td><button type="button" class="green sl-view-memo-btn" onclick="viewSavedInvoice('+Number(s.id)+')">👁️ View Memo</button></td></tr>'}).join('');
+ html+='</table></div></div>';
+}else html+='<div class="sl-empty-report">এই Customer-এর কোনো Sales Invoice/Memo এখনো নেই।</div>';
+box.innerHTML=html;
+}
+
+function renderDueManagement(){let box=document.getElementById('dueManagementBox');if(!box)return;let rows=sales.filter(s=>saleDueAmount(s)>0);box.innerHTML=rows.length?'<div class="report-scroll"><table><tr><th>Invoice</th><th>Date</th><th>Customer</th><th>Total</th><th>Due</th><th>Receive</th><th>Action</th></tr>'+rows.map(s=>`<tr><td>${s.invoice}</td><td>${s.date}</td><td>${esc(s.customerName)}</td><td>${money(s.total)}</td><td>${money(saleDueAmount(s))}</td><td><input id="duePay_${s.id}" type="number" min="0" max="${saleDueAmount(s)}" step="0.01" style="width:120px"></td><td><button class="green" onclick="receiveDue(${s.id})">Receive</button></td></tr>`).join('')+'</table></div>':'<p>কোনো বকেয়া নেই।</p>'}
+function receiveDue(i){let s=sales.find(x=>String(x.id)===String(i));if(!s)return;let inp=document.getElementById('duePay_'+i),amt=Number(inp?.value)||0,oldPaid=salePaidAmount(s),oldDue=saleDueAmount(s);if(!Number.isFinite(amt)||amt<=0)return alert('সঠিক টাকা দিন');if(amt>oldDue+0.000001)return alert('বকেয়ার চেয়ে বেশি টাকা নেওয়া যাবে না');s.paid=Math.min(Number(s.total)||0,oldPaid+amt);s.due=Math.max(0,(Number(s.total)||0)-s.paid);s.payment=s.due<=0.000001?'Cash':(s.paid<=0?'Due':'Partial');save(K.sales,sales);renderDueManagement();renderCustomerReport();renderSales();refreshDashboard();refreshReports();alert('Payment received: '+money(amt))}
+function renderStockReport(){
+let box=document.getElementById('stockReportBox');if(!box)return;
+let soldBy={};sales.forEach(s=>(s.items||[]).forEach(i=>{soldBy[i.productId]=(soldBy[i.productId]||0)+(+i.qty||0)}));
+let buyBy={};purchases.forEach(p=>{buyBy[p.productId]=(buyBy[p.productId]||0)+(+p.qty||0)});
+let value=products.reduce((a,p)=>a+(+p.stock||0)*(+p.buy||0),0);
+box.innerHTML=`<p><b>বর্তমান স্টকের আনুমানিক ক্রয়মূল্য: ${money(value)}</b></p><div class="report-scroll"><table><tr><th>Product</th><th>Stock</th><th>Buy Price</th><th>Stock Value</th><th>Purchased</th><th>Sold</th><th>Potential Margin</th></tr>`+products.map(p=>{let st=+p.stock||0,b=+p.buy||0,s=+p.sell||0,sold=soldBy[p.id]||0,buy=buyBy[p.id]||0;return `<tr class="${st<=5?'low':''}"><td>${esc(p.name)}</td><td>${st}</td><td>${money(b)}</td><td>${money(st*b)}</td><td>${buy}</td><td>${sold}</td><td>${money((s-b)*st)}</td></tr>`}).join('')+'</table></div>';
+}
+
+
+function populateAdjustment(){
+let sel=document.getElementById('adjProduct');if(!sel)return;
+let old=sel.value;
+sel.innerHTML='<option value="">Product select</option>'+products.map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join('');
+if(old)sel.value=old;adjInfo();
+}
+function adjInfo(){
+let p=products.find(x=>x.id==document.getElementById('adjProduct')?.value);
+if(document.getElementById('adjCurrent'))document.getElementById('adjCurrent').value=p?p.stock:'';
+}
+function saveAdjustment(){
+let pid=document.getElementById('adjProduct').value,p=products.find(x=>x.id==pid),nv=+document.getElementById('adjNew').value;
+let reason=document.getElementById('adjReason').value.trim()||'Stock adjustment';
+if(!p||nv<0||Number.isNaN(nv))return alert('Product ও সঠিক New Actual Stock দিন');
+let old=+p.stock||0;p.stock=nv;
+adjustments.push({id:id(),date:today(),productId:p.id,name:p.name,oldStock:old,newStock:nv,difference:nv-old,reason});
+save(K.products,products);save('sl_adjustments',adjustments);
+document.getElementById('adjNew').value='';document.getElementById('adjReason').value='';
+renderAdjustments();populateAdjustment();refreshAll();alert('Stock Adjustment সফল হয়েছে।');
+}
+function renderAdjustments(){
+let box=document.getElementById('adjustmentTable');if(!box)return;
+box.innerHTML='<h3>Adjustment History</h3><div class="table-scroll"><table><tr><th>Date</th><th>Product</th><th>Old</th><th>New</th><th>Difference</th><th>Reason</th></tr>'+
+adjustments.slice().reverse().map(a=>`<tr><td>${a.date}</td><td>${esc(a.name)}</td><td>${a.oldStock}</td><td>${a.newStock}</td><td>${a.difference>0?'+':''}${a.difference}</td><td>${esc(a.reason)}</td></tr>`).join('')+'</table></div>';
+}
+function refreshV6(){
+populateAdjustment();renderAdjustments();
+}
+
+
+let purchaseInvoiceItems=[];
+let editSupplierId=null;
+
+function clearSupplier(){editSupplierId=null;['sName','sPhone','sAddress'].forEach(x=>document.getElementById(x).value='')}
+function saveSupplier(){
+let name=sName.value.trim();if(!name)return alert('Supplier Name দিন');
+if(editSupplierId){let s=suppliers.find(x=>x.id===editSupplierId);Object.assign(s,{name,phone:sPhone.value,address:sAddress.value})}
+else suppliers.push({id:id(),name,phone:sPhone.value,address:sAddress.value});
+save('sl_suppliers',suppliers);clearSupplier();refreshAll();
+}
+function editSupplier(i){let s=suppliers.find(x=>x.id===i);if(!s)return;editSupplierId=i;sName.value=s.name;sPhone.value=s.phone;sAddress.value=s.address}
+function renderSuppliers(){
+let box=document.getElementById('supplierTable');if(!box)return;
+box.innerHTML='<h3>Supplier List</h3><div class="table-scroll"><table><tr><th>Supplier</th><th>Mobile</th><th>Address</th><th>Action</th></tr>'+
+suppliers.map(s=>`<tr><td>${esc(s.name)}</td><td>${esc(s.phone)}</td><td>${esc(s.address)}</td><td><button onclick="editSupplier(${s.id})">Edit</button></td></tr>`).join('')+'</table></div>';
+}
+function purchaseInvoiceNumber(){return 'PINV-'+new Date().getFullYear()+'-'+String(purchaseInvoices.length+1).padStart(4,'0')}
+function newPurchaseInvoice(){
+purchaseInvoiceItems=[];piDate.value=today();purchaseInvNo.textContent='Purchase Invoice No: '+purchaseInvoiceNumber();
+piSupplier.value='';piPhone.value='';piAddress.value='';piProduct.value='';piQty.value='';piPrice.value='';piLineTotal.value='';renderPurchaseInvoiceItems();
+}
+function populateSupplierSelect(){
+let sel=document.getElementById('piSupplier');if(!sel)return;
+let old=sel.value;sel.innerHTML='<option value="">Supplier select</option>'+suppliers.map(s=>`<option value="${s.id}">${esc(s.name)} - ${esc(s.phone)}</option>`).join('');if(old)sel.value=old;
+}
+function supplierInfo(){let s=suppliers.find(x=>x.id==piSupplier.value);piPhone.value=s?.phone||'';piAddress.value=s?.address||''}
+function populatePurchaseProductSelect(){
+let sel=document.getElementById('piProduct');if(!sel)return;
+let old=sel.value;
+sel.innerHTML='<option value="">Product select</option>'+products.map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join('');
+if(old)sel.value=old;
+}
+function purchaseProductInfo(){let p=products.find(x=>String(x.id)===String(piProduct.value));piPrice.value=p?.buy??'';purchaseLineCalc()}
+function purchaseLineCalc(){piLineTotal.value=((+piQty.value||0)*(+piPrice.value||0)).toFixed(2)}
+function addPurchaseInvoiceItem(){
+let p=products.find(x=>x.id==piProduct.value),q=+piQty.value||0,price=+piPrice.value||0;
+if(!p||q<=0)return alert('Product ও সঠিক Quantity দিন');
+purchaseInvoiceItems.push({productId:p.id,name:p.name,qty:q,price,total:q*price});
+piProduct.value='';piQty.value='';piPrice.value='';piLineTotal.value='';renderPurchaseInvoiceItems();
+}
+function renderPurchaseInvoiceItems(){
+let box=document.getElementById('purchaseInvoiceItems');if(!box)return;
+let t='<div class="table-scroll"><table><tr><th>Product</th><th>Qty</th><th>Rate</th><th>Total</th><th></th></tr>'+
+purchaseInvoiceItems.map((x,i)=>`<tr><td>${esc(x.name)}</td><td>${x.qty}</td><td>${money(x.price)}</td><td>${money(x.total)}</td><td><button class="danger" onclick="purchaseInvoiceItems.splice(${i},1);renderPurchaseInvoiceItems()">X</button></td></tr>`).join('')+'</table></div>';
+box.innerHTML=t;piTotal.textContent=money(purchaseInvoiceItems.reduce((a,x)=>a+x.total,0));
+}
+function savePurchaseInvoice(){
+if(!piDate.value)piDate.value=today();if(!purchaseInvoiceItems.length)return alert('কমপক্ষে একটি পণ্য যোগ করুন');
+let sid=piSupplier.value||'',s=suppliers.find(x=>x.id==sid),total=purchaseInvoiceItems.reduce((a,x)=>a+x.total,0);
+purchaseInvoiceItems.forEach(x=>{let p=products.find(z=>z.id===x.productId);if(p){p.stock=(+p.stock||0)+x.qty;p.buy=x.price}});
+let record={id:id(),invoice:purchaseInvoiceNumber(),date:piDate.value,supplierId:sid,supplierName:s?.name||'Cash Supplier',phone:s?.phone||'',items:purchaseInvoiceItems,total,payment:'Cash'};
+purchaseInvoices.push(record);
+purchaseInvoiceItems.forEach(item=>purchases.push({id:id(),date:piDate.value,invoice:record.invoice,supplierId:sid,supplierName:record.supplierName,productId:item.productId,name:item.name,qty:item.qty,price:item.price,total:item.total}));
+save(K.products,products);save(K.purchase,purchases);save('sl_purchase_invoices',purchaseInvoices);
+let savedPurchaseInvoice=record.invoice;
+slConfirm('Purchase Invoice '+savedPurchaseInvoice+' সফলভাবে Save হয়েছে। এখন কি Invoice Print করবেন?',()=>{printPurchaseInvoice();newPurchaseInvoice();refreshAll()},'Purchase Invoice Saved',()=>{newPurchaseInvoice();refreshAll()});
+}
+function printPurchaseInvoice(){window.print()}
+function renderPurchaseInvoiceHistory(){
+let box=document.getElementById('purchaseInvoiceHistory');if(!box)return;
+box.innerHTML='<h3>Purchase Invoice History</h3><div class="table-scroll"><table><tr><th>Invoice</th><th>Date</th><th>Supplier</th><th>Total</th></tr>'+
+purchaseInvoices.slice().reverse().map(x=>`<tr><td>${x.invoice}</td><td>${x.date}</td><td>${esc(x.supplierName)}</td><td>${money(x.total)}</td></tr>`).join('')+'</table></div>';
+}
+function refreshV7(){
+populateSupplierSelect();populatePurchaseProductSelect();renderSuppliers();renderPurchaseInvoiceHistory();
+if(document.getElementById('purchaseInvNo')&&!piDate.value)newPurchaseInvoice();
+}
+
+
+function calculatePL(type,period){
+let ss=sales, ee=expenses, sr=salesReturns, pr=purchaseReturns;
+let match=d=>type==='daily'?d.date===period:type==='monthly'?d.date&&d.date.slice(0,7)===period:true;
+ss=ss.filter(match);ee=ee.filter(match);sr=sr.filter(match);pr=pr.filter(match);
+let salesTotal=ss.reduce((a,s)=>a+s.total,0)-sr.reduce((a,x)=>a+x.total,0);
+let cogs=0;ss.forEach(s=>s.items.forEach(i=>{let p=products.find(x=>String(x.id)===String(i.productId));cogs+=(+i.qty||0)*(+(p?.buy||i.buy||0));}));
+sr.forEach(r=>{let p=products.find(x=>String(x.id)===String(r.productId));cogs-=(+r.qty||0)*(+(p?.buy||r.buy||0));});
+let expenseTotal=ee.reduce((a,e)=>a+(+e.amount||0),0),gross=salesTotal-cogs,net=gross-expenseTotal;return {salesTotal,cogs,gross,expenseTotal,net,margin:salesTotal?net/salesTotal*100:0};}
+
+function renderPL(){
+let type=document.getElementById('plType')?.value||'all',period=document.getElementById('plPeriod')?.value||today();
+let d=calculatePL(type,period),t=totals();
+let stockValue=products.reduce((a,p)=>a+(+p.stock||0)*(+p.buy||0),0);
+if(document.getElementById('plSales')){
+plSales.textContent=money(d.salesTotal);plCogs.textContent=money(d.cogs);plGross.textContent=money(d.gross);
+plExpense.textContent=money(d.expenseTotal);plNet.textContent=money(d.net);plStockValue.textContent=money(stockValue);
+plCash.textContent=money(t.cash);plMargin.textContent=d.margin.toFixed(2)+'%';
+}
+let box=document.getElementById('plPeriodBox');
+if(box)box.innerHTML=`<div class="grid"><div class="stat">Sales<b>${money(d.salesTotal)}</b></div><div class="stat">COGS<b>${money(d.cogs)}</b></div><div class="stat">Gross Profit<b>${money(d.gross)}</b></div><div class="stat">Expense<b>${money(d.expenseTotal)}</b></div><div class="stat">Net Profit<b>${money(d.net)}</b></div></div>`;
+renderProductProfit();
+}
+function renderProductProfit(){
+let box=document.getElementById('productProfitBox');if(!box)return;
+let map={};
+sales.forEach(s=>s.items.forEach(i=>{
+let p=products.find(x=>String(x.id)===String(i.productId)),buy=+(p?.buy||i.buy||0),qty=+(i.qty||0),revenue=qty*(+i.price||0),cogs=qty*buy;
+if(!map[i.productId])map[i.productId]={name:p?.name||i.name,qty:0,revenue:0,cogs:0};
+map[i.productId].qty+=qty;map[i.productId].revenue+=revenue;map[i.productId].cogs+=cogs;
+}));
+let rows=Object.values(map).sort((a,b)=>(b.revenue-b.cogs)-(a.revenue-a.cogs));
+box.innerHTML=rows.length?'<div class="table-scroll"><table><tr><th>Product</th><th>Sold Qty</th><th>Sales</th><th>COGS</th><th>Gross Profit</th></tr>'+
+rows.map(r=>`<tr><td>${esc(r.name)}</td><td>${r.qty}</td><td>${money(r.revenue)}</td><td>${money(r.cogs)}</td><td>${money(r.revenue-r.cogs)}</td></tr>`).join('')+'</table></div>':'<p class="muted">এখনও কোনো বিক্রয় নেই।</p>';
+}
+
+
+let cashClosings=load('sl_cash_closings'),cashMovements=load('sl_cash_movements'),bankDeposits=load('sl_bank_deposits');
+if(!Array.isArray(bankDeposits))bankDeposits=[];
+
+function clearBankDeposit(){
+let d=document.getElementById('bdDate'),an=document.getElementById('bdAccountNumber'),ac=document.getElementById('bdAccountName'),bn=document.getElementById('bdBank'),am=document.getElementById('bdAmount'),rf=document.getElementById('bdRef'),nt=document.getElementById('bdNote');
+if(d)d.value=today();if(an)an.value='';if(ac)ac.value='';if(bn)bn.value='';if(am)am.value='';if(rf)rf.value='';if(nt)nt.value='';
+}
+function saveBankDeposit(){
+let date=document.getElementById('bdDate')?.value||today(),accountNumber=(document.getElementById('bdAccountNumber')?.value||'').trim(),accountName=(document.getElementById('bdAccountName')?.value||'').trim(),bank=(document.getElementById('bdBank')?.value||'').trim(),amount=+(document.getElementById('bdAmount')?.value||0)||0;
+if(!accountNumber)return alert('Account Number দিন');if(!accountName)return alert('Account Name দিন');if(!bank)return alert('Bank Name দিন');if(amount<=0)return alert('সঠিক জমার পরিমাণ দিন');
+let paidSales=sales.reduce((a,x)=>a+(x.paid===undefined?(x.payment==='Cash'?+x.total||0:0):(+x.paid||0)),0)-returnTotals().sr;
+let purchaseCash=purchases.reduce((a,x)=>a+(+x.total||0),0)-returnTotals().pr;
+let expenseTotal=expenses.reduce((a,x)=>a+(+x.amount||0),0);
+let currentCash=paidSales-purchaseCash-expenseTotal-bankDeposits.reduce((a,x)=>a+(+x.amount||0),0);
+if(amount>currentCash)return alert('Cash-এর চেয়ে বেশি টাকা ব্যাংকে জমা দেওয়া যাবে না। বর্তমান Cash: '+money(currentCash));
+bankDeposits.push({id:id(),date,accountNumber,accountName,bank,amount,ref:(document.getElementById('bdRef')?.value||'').trim(),note:(document.getElementById('bdNote')?.value||'').trim()});
+save('sl_bank_deposits',bankDeposits);clearBankDeposit();renderCashBook();refreshDashboard();alert('Bank Deposit saved — Cash কমেছে এবং Bank Balance বেড়েছে');
+}
+function renderBankDeposits(){
+let total=bankDeposits.reduce((a,x)=>a+(+x.amount||0),0),box=document.getElementById('bankDepositSummary');
+if(box)box.innerHTML='<div class="grid"><div class="stat">মোট ব্যাংক জমা<b>'+money(total)+'</b></div></div>';
+let t=document.getElementById('bankDepositTable');if(t)t.innerHTML='<div class="table-scroll"><table><tr><th>তারিখ</th><th>Account Number</th><th>Account Name</th><th>Bank Name</th><th>Amount</th><th>Slip / Reference</th><th>Note</th></tr>'+bankDeposits.slice().reverse().map(x=>'<tr><td>'+x.date+'</td><td>'+esc(x.accountNumber||'')+'</td><td>'+esc(x.accountName||'')+'</td><td>'+esc(x.bank||'')+'</td><td>'+money(x.amount)+'</td><td>'+esc(x.ref||'')+'</td><td>'+esc(x.note||'')+'</td></tr>').join('')+'</table></div>';
+}
+
+function newCashClosing(){
+cbDate.value=today();cbOpening.value='';cbIn.value='';cbOut.value='';cbClosing.value='';cbNote.value='';
+}
+function calcCashClosing(){
+let o=+cbOpening.value||0,i=+cbIn.value||0,out=+cbOut.value||0;
+cbClosing.value=(o+i-out).toFixed(2);
+}
+function saveCashClosing(){
+calcCashClosing();let date=cbDate.value||today(),o=+cbOpening.value||0,i=+cbIn.value||0,out=+cbOut.value||0,c=+cbClosing.value||0;
+cashClosings.push({id:id(),date,opening:o,cashIn:i,cashOut:out,closing:c,note:cbNote.value.trim()});
+save('sl_cash_closings',cashClosings);renderCashBook();alert('Daily Closing saved');newCashClosing();
+}
+function saveCashMovement(){
+let date=cmDate.value||today(),type=cmType.value,amount=+cmAmount.value||0;
+if(amount<=0)return alert('সঠিক Amount দিন');
+cashMovements.push({id:id(),date,type,category:cmCategory.value.trim()||'Other',amount,note:cmNote.value.trim()});
+save('sl_cash_movements',cashMovements);renderCashBook();alert('Cash Movement saved');
+cmAmount.value='';cmCategory.value='';cmNote.value='';
+}
+function renderCashBook(){
+let s=cashMovements.filter(x=>x.date===today()),cin=s.filter(x=>x.type==='in').reduce((a,x)=>a+x.amount,0),cout=s.filter(x=>x.type==='out').reduce((a,x)=>a+x.amount,0);
+let box=document.getElementById('cashSummary');
+if(box)box.innerHTML=`<div class="grid"><div class="stat">Today Cash In<b>${money(cin)}</b></div><div class="stat">Today Cash Out<b>${money(cout)}</b></div><div class="stat">Today Net Movement<b>${money(cin-cout)}</b></div></div>`;
+let mt=document.getElementById('cashMovementTable');
+if(mt)mt.innerHTML='<div class="table-scroll"><table><tr><th>Date</th><th>Type</th><th>Category</th><th>Amount</th><th>Note</th></tr>'+
+cashMovements.slice().reverse().map(x=>`<tr><td>${x.date}</td><td>${x.type==='in'?'Cash In':'Cash Out'}</td><td>${esc(x.category)}</td><td>${money(x.amount)}</td><td>${esc(x.note)}</td></tr>`).join('')+'</table></div>';
+let ct=document.getElementById('cashClosingTable');
+if(ct)ct.innerHTML='<div class="table-scroll"><table><tr><th>Date</th><th>Opening</th><th>Cash In</th><th>Cash Out</th><th>Closing</th><th>Note</th></tr>'+
+cashClosings.slice().reverse().map(x=>`<tr><td>${x.date}</td><td>${money(x.opening)}</td><td>${money(x.cashIn)}</td><td>${money(x.cashOut)}</td><td><b>${money(x.closing)}</b></td><td>${esc(x.note)}</td></tr>`).join('')+'</table></div>';
+}
+function refreshV9(){renderCashBook();renderBankDeposits();}
+
+
+function renderDailyReport(){
+let date=document.getElementById('drDate')?.value||today();
+let ds=sales.filter(x=>x.date===date), dp=purchases.filter(x=>x.date===date), de=expenses.filter(x=>x.date===date);
+let salesTotal=ds.reduce((a,x)=>a+(+x.total||0),0);
+let purchaseTotal=dp.reduce((a,x)=>a+(+x.total||0),0);
+let expenseTotal=de.reduce((a,x)=>a+(+x.amount||0),0);
+let cogs=0;
+ds.forEach(s=>s.items.forEach(i=>{
+let p=products.find(x=>String(x.id)===String(i.productId));
+cogs+=(+i.qty||0)*(+(p?.buy||i.buy||0));
+}));
+let gross=salesTotal-cogs,net=gross-expenseTotal;
+let dailyPaidSales=ds.reduce((a,x)=>a+(x.paid===undefined?(x.payment==='Cash'?(+x.total||0):0):(+x.paid||0)),0);
+let dailySalesReturns=salesReturns.filter(x=>x.date===date).reduce((a,x)=>a+(+x.total||0),0);
+let dailyPurchaseReturns=purchaseReturns.filter(x=>x.date===date).reduce((a,x)=>a+(+x.total||0),0);
+let dailyCashNet=dailyPaidSales-dailySalesReturns-purchaseTotal+dailyPurchaseReturns-expenseTotal;
+let stockQty=products.reduce((a,p)=>a+(+p.stock||0),0);
+let stockValue=products.reduce((a,p)=>a+(+p.stock||0)*(+p.buy||0),0);
+
+let sum=document.getElementById('dailySummary');
+if(sum)sum.innerHTML=`<div class="grid">
+<div class="stat">মোট বিক্রয়<b>${money(salesTotal)}</b></div>
+<div class="stat">মোট ক্রয়<b>${money(purchaseTotal)}</b></div>
+<div class="stat">মোট খরচ<b>${money(expenseTotal)}</b></div>
+<div class="stat">Net Profit<b>${money(net)}</b></div>
+<div class="stat">Cash Net<b>${money(dailyCashNet)}</b></div>
+<div class="stat">মোট পণ্য স্টক<b>${stockQty}</b></div>
+<div class="stat">Stock Value<b>${money(stockValue)}</b></div>
+</div>`;
+
+let dd=document.getElementById('dailyDetails');
+if(dd)dd.innerHTML=`<div class="table-scroll"><table>
+<tr><th>বিষয়</th><th>সংখ্যা</th><th>টাকা</th></tr>
+<tr><td>Sales Invoice</td><td>${ds.length}</td><td>${money(salesTotal)}</td></tr>
+<tr><td>Purchase Invoice</td><td>${dp.length}</td><td>${money(purchaseTotal)}</td></tr>
+<tr><td>Expense Entry</td><td>${de.length}</td><td>${money(expenseTotal)}</td></tr>
+<tr><td>COGS</td><td>-</td><td>${money(cogs)}</td></tr>
+<tr><td>Gross Profit</td><td>-</td><td>${money(gross)}</td></tr>
+<tr><td><b>Net Profit</b></td><td>-</td><td><b>${money(net)}</b></td></tr>
+</table></div>`;
+
+let cm=cashMovements.filter(x=>x.date===date);
+let cashIn=cm.filter(x=>x.type==='in').reduce((a,x)=>a+x.amount,0);
+let cashOut=cm.filter(x=>x.type==='out').reduce((a,x)=>a+x.amount,0);
+let closing=cashClosings.find(x=>x.date===date);
+let dc=document.getElementById('dailyCash');
+if(dc)dc.innerHTML=`<div class="table-scroll"><table>
+<tr><th>Cash Item</th><th>Amount</th></tr>
+<tr><td>Cash Movement In</td><td>${money(cashIn)}</td></tr>
+<tr><td>Cash Movement Out</td><td>${money(cashOut)}</td></tr>
+<tr><td>Daily Closing</td><td>${closing?money(closing.closing):'Not entered'}</td></tr>
+<tr><td>Current System Cash</td><td>${money(totals().cash)}</td></tr>
+</table></div>`;
+
+let st=document.getElementById('dailyStock');
+if(st)st.innerHTML=products.length?'<div class="table-scroll"><table><tr><th>Product</th><th>Stock</th><th>Buy Price</th><th>Stock Value</th></tr>'+
+products.map(p=>`<tr><td>${esc(p.name)}</td><td>${+p.stock||0}</td><td>${money(+p.buy||0)}</td><td>${money((+p.stock||0)*(+p.buy||0))}</td></tr>`).join('')+'</table></div>':'<p class="muted">কোনো Product নেই।</p>';
+}
+function printDailyReport(){
+let old=document.title;document.title='Smart Ledger - Daily Business Report';window.print();document.title=old;
+}
+function refreshV10(){
+let d=document.getElementById('drDate');if(d&&!d.value)d.value=today();
+renderDailyReport();
+}
+
+
+function renderReturnSelects(){
+let si=document.getElementById('srInvoice'),pi=document.getElementById('prPurchase');
+if(si){let old=si.value;si.innerHTML='<option value="">Invoice select</option>'+sales.slice().reverse().map(x=>`<option value="${x.id}">${esc(x.invoice)} - ${esc(x.customerName)} - ${money(x.total)}</option>`).join('');if(old)si.value=old;loadSalesReturnItems()}
+if(pi){let old=pi.value;pi.innerHTML='<option value="">Purchase select</option>'+purchases.slice().reverse().map(x=>`<option value="${x.id}">${esc(x.name)} - Qty ${x.qty} - ${money(x.total)} (${x.date})</option>`).join('');if(old)pi.value=old}
+renderReturnHistory();
+}
+function loadSalesReturnItems(){let si=document.getElementById('srInvoice'),it=document.getElementById('srItem');if(!si||!it)return;let s=sales.find(x=>x.id==si.value);it.innerHTML='<option value="">Product select</option>'+(s?s.items.map((x,n)=>`<option value="${n}">${esc(x.name||products.find(p=>p.id==x.productId)?.name||'Product')} — Qty ${x.qty} — ${money(x.price||0)}</option>`).join(''):'');}
+function saveSalesReturn(){let inv=srInvoice.value,s=sales.find(x=>x.id==inv),idx=+srItem.value,q=+srQty.value||0;if(!s||!s.items[idx]||q<=0)return alert('Invoice, Product ও Quantity দিন');let item=s.items[idx];let already=salesReturns.filter(r=>r.saleId==s.id&&r.itemIndex===idx).reduce((a,r)=>a+r.qty,0);if(q>item.qty-already)return alert('ফেরতের Quantity বিক্রিত অবশিষ্ট পরিমাণের বেশি হতে পারবে না');let p=products.find(x=>String(x.id)===String(item.productId));if(!p)return alert('পণ্য পাওয়া যায়নি');p.stock=(+p.stock||0)+q;let amount=q*(+item.price||0);salesReturns.push({id:id(),date:today(),saleId:s.id,invoice:s.invoice,itemIndex:idx,productId:item.productId,name:item.name||p.name,qty:q,price:+item.price||0,total:amount,reason:srReason.value.trim()});
+if(amount>0){cashMovements=Array.isArray(cashMovements)?cashMovements:[];cashMovements.push({id:id(),date:today(),type:'out',category:'Sales Return',amount,note:'Refund for Invoice '+(s.invoice||'')});save('sl_cash_movements',cashMovements);}
+save(K.products,products);save('sl_sales_returns',salesReturns);srQty.value='';srReason.value='';refreshAll();alert('Sales Return saved');}
+function savePurchaseReturn(){let rid=prPurchase.value,x=purchases.find(p=>p.id==rid),q=+prQty.value||0;if(!x||q<=0)return alert('Purchase ও Quantity দিন');let already=purchaseReturns.filter(r=>r.purchaseId==x.id).reduce((a,r)=>a+r.qty,0);if(q>x.qty-already)return alert('ফেরতের Quantity ক্রয়কৃত অবশিষ্ট পরিমাণের বেশি হতে পারবে না');let p=products.find(z=>String(z.id)===String(x.productId));if(!p)return alert('পণ্য পাওয়া যায়নি');if(q>(+p.stock||0))return alert('বর্তমান স্টক যথেষ্ট নেই');p.stock-=q;let amount=q*(+x.price||0);purchaseReturns.push({id:id(),date:today(),purchaseId:x.id,productId:x.productId,name:x.name,qty:q,price:+x.price||0,total:amount,reason:prReason.value.trim()});save(K.products,products);save('sl_purchase_returns',purchaseReturns);prQty.value='';prReason.value='';refreshAll();alert('Purchase Return saved');}
+function renderReturnHistory(){let a=document.getElementById('salesReturnHistory'),b=document.getElementById('purchaseReturnHistory');if(a)a.innerHTML='<h3>Sales Return History</h3><div class="table-scroll"><table><tr><th>Date</th><th>Invoice</th><th>Product</th><th>Qty</th><th>Amount</th><th>Reason</th></tr>'+salesReturns.slice().reverse().map(r=>`<tr><td>${r.date}</td><td>${esc(r.invoice)}</td><td>${esc(r.name)}</td><td>${r.qty}</td><td>${money(r.total)}</td><td>${esc(r.reason)}</td></tr>`).join('')+'</table></div>';
+if(b)b.innerHTML='<h3>Purchase Return History</h3><div class="table-scroll"><table><tr><th>Date</th><th>Product</th><th>Qty</th><th>Amount</th><th>Reason</th></tr>'+purchaseReturns.slice().reverse().map(r=>`<tr><td>${r.date}</td><td>${esc(r.name)}</td><td>${r.qty}</td><td>${money(r.total)}</td><td>${esc(r.reason)}</td></tr>`).join('')+'</table></div>';}
+function returnTotals(){return {sr:salesReturns.reduce((a,x)=>a+(+x.total||0),0),pr:purchaseReturns.reduce((a,x)=>a+(+x.total||0),0)};}
+
+
+let users=load('sl_users');
+if(!users.length){users=[{id:id(),username:'admin',password:'1234',role:'admin'}];save('sl_users',users)}
+let currentSession=JSON.parse(sessionStorage.getItem('sl_session')||'null');
+const REMEMBER_LOGIN_KEY='sl_remember_login';
+
+function loadRememberedLogin(){
+  try{
+    const r=JSON.parse(localStorage.getItem(REMEMBER_LOGIN_KEY)||'null');
+    const u=document.getElementById('loginUser'),p=document.getElementById('loginPass'),c=document.getElementById('rememberLogin');
+    if(r&&u&&p){u.value=r.username||'';p.value=r.password||'';if(c)c.checked=true;}
+  }catch(e){}
+}
+function saveRememberedLogin(username,password){
+  const c=document.getElementById('rememberLogin');
+  if(c&&c.checked)localStorage.setItem(REMEMBER_LOGIN_KEY,JSON.stringify({username,password}));
+  else localStorage.removeItem(REMEMBER_LOGIN_KEY);
+}
+
+function login(){
+let u=document.getElementById('loginUser').value.trim(),p=document.getElementById('loginPass').value;
+let found=users.find(x=>x.username===u&&x.password===p);
+if(!found){document.getElementById('loginMsg').textContent='Username অথবা Password ভুল';localStorage.removeItem(REMEMBER_LOGIN_KEY);return}
+saveRememberedLogin(found.username,found.password);
+currentSession={username:found.username,role:found.role};
+sessionStorage.setItem('sl_session',JSON.stringify(currentSession));
+document.getElementById('loginScreen').style.display='none';
+applySecurity();refreshAll();
+}
+function logout(){sessionStorage.removeItem('sl_session');currentSession=null;location.reload()}
+function applySecurity(){
+let screen=document.getElementById('loginScreen'),user=document.getElementById('currentUser');
+if(!currentSession){screen.style.display='flex';return}
+screen.style.display='none';if(user)user.textContent=currentSession.username+' ('+currentSession.role+')';
+let nav=document.getElementById('userNav');if(nav)nav.style.display=currentSession.role==='admin'?'inline-block':'none';
+}
+function saveUser(){
+if(!currentSession||currentSession.role!=='admin')return alert('শুধু Admin User Management করতে পারবেন');
+let username=uName.value.trim(),password=uPass.value,role=uRole.value;
+if(!username||password.length<4)return alert('Username দিন এবং কমপক্ষে 4 অক্ষরের Password দিন');
+if(users.some(x=>x.username===username))return alert('এই Username আগে থেকেই আছে');
+users.push({id:id(),username,password,role});save('sl_users',users);uName.value='';uPass.value='';renderUsers();alert('User saved');
+}
+function renderUsers(){
+let box=document.getElementById('userTable');if(!box)return;
+box.innerHTML='<div class="table-scroll"><table><tr><th>Username</th><th>Role</th></tr>'+
+users.map(x=>`<tr><td>${esc(x.username)}</td><td>${x.role}</td></tr>`).join('')+'</table></div>';
+}
+function changeMyPassword(){
+if(!currentSession)return;
+let old=document.getElementById('oldPass').value,nw=document.getElementById('newPass').value,u=users.find(x=>x.username===currentSession.username);
+if(!u||u.password!==old)return alert('Current Password ভুল');
+if(nw.length<4)return alert('New Password কমপক্ষে 4 অক্ষরের হতে হবে');
+u.password=nw;save('sl_users',users);document.getElementById('oldPass').value='';document.getElementById('newPass').value='';alert('Password changed');
+}
+function refreshV12(){applySecurity();renderUsers();}
+
+function refreshAll(){renderDueManagement();refreshV12();renderReturnSelects();refreshV10();refreshV9();refreshV7();refreshV6();renderPL();populateSelects();renderProducts();renderCustomers();renderSales();renderPurchases();renderExpenses();refreshDashboard();refreshReports();renderCustomerReport();renderStockReport();if(!invDate.value)newInvoice();else{invoiceNo.textContent='Invoice No: '+invoiceNumber();renderInvoiceItems()}}
+const invoiceItemsDiv=document.getElementById('invoiceItems');
+invDate.value=today();if(document.getElementById('cbDate'))document.getElementById('cbDate').value=today();if(document.getElementById('cmDate'))document.getElementById('cmDate').value=today();if(document.getElementById('plPeriod'))document.getElementById('plPeriod').value=today();if(document.getElementById('piDate'))document.getElementById('piDate').value=today();if(document.getElementById('reportPeriod'))document.getElementById('reportPeriod').value=today();refreshAll();
+</script>
+
+<script>
+(function(){
+  const KEY = 'sl_business_settings';
+  const defaults = {
+    bizName:'Smart Ledger Business',
+    ownerName:'',
+    phone:'',
+    address:'',
+    invoiceTitle:'Sales Invoice / Cash Memo',
+    invoiceFooter:'Thank you for your business',
+    currency:'৳',
+    lowStock:5
+  };
+
+  window.loadBusinessSettings = function(){
+    let cfg = {};
+    try { cfg = JSON.parse(localStorage.getItem(KEY) || '{}'); } catch(e) {}
+    cfg = Object.assign({}, defaults, cfg);
+
+    const map = {
+      setBizName: cfg.bizName,
+      setOwnerName: cfg.ownerName,
+      setPhone: cfg.phone,
+      setAddress: cfg.address,
+      setInvoiceTitle: cfg.invoiceTitle,
+      setInvoiceFooter: cfg.invoiceFooter,
+      setCurrency: cfg.currency,
+      setLowStock: cfg.lowStock
+    };
+    Object.keys(map).forEach(id => {
+      const el=document.getElementById(id);
+      if(el) el.value=map[id];
+    });
+    updateInvoicePreview(cfg);
+    window.slBusinessSettings = cfg;
+    return cfg;
+  };
+
+  window.saveBusinessSettings = function(){
+    const cfg = {
+      bizName: document.getElementById('setBizName').value.trim() || defaults.bizName,
+      ownerName: document.getElementById('setOwnerName').value.trim(),
+      phone: document.getElementById('setPhone').value.trim(),
+      address: document.getElementById('setAddress').value.trim(),
+      invoiceTitle: document.getElementById('setInvoiceTitle').value.trim() || defaults.invoiceTitle,
+      invoiceFooter: document.getElementById('setInvoiceFooter').value.trim() || defaults.invoiceFooter,
+      currency: document.getElementById('setCurrency').value.trim() || defaults.currency,
+      lowStock: Math.max(0, Number(document.getElementById('setLowStock').value || defaults.lowStock))
+    };
+    localStorage.setItem(KEY, JSON.stringify(cfg));
+    window.slBusinessSettings = cfg;
+    window.LOW_STOCK_THRESHOLD = cfg.lowStock;
+    updateInvoicePreview(cfg);
+    if(typeof refreshAll==='function') refreshAll();
+    if(typeof refreshDashboard==='function') refreshDashboard();
+    alert('Business settings saved successfully.');
+  };
+
+  window.resetBusinessSettings = function(){
+    if(!confirm('Reset business settings to default?')) return;
+    localStorage.removeItem(KEY);
+    loadBusinessSettings();
+  };
+
+  window.updateInvoicePreview = function(cfg){
+    const vals = {
+      previewBizName: cfg.bizName,
+      previewOwner: cfg.ownerName ? 'Owner / Manager: ' + cfg.ownerName : '',
+      previewPhone: cfg.phone ? 'Phone: ' + cfg.phone : '',
+      previewAddress: cfg.address ? 'Address: ' + cfg.address : '',
+      previewTitle: cfg.invoiceTitle,
+      previewFooter: cfg.invoiceFooter
+    };
+    Object.keys(vals).forEach(id=>{
+      const el=document.getElementById(id);
+      if(el) el.textContent=vals[id];
+    });
+    const headerName=document.querySelector('.v16-brand h1');
+    if(headerName) headerName.textContent=cfg.bizName || defaults.bizName;
+    const headerOwner=document.querySelector('.v16-brand h1 + div');
+    if(headerOwner) headerOwner.textContent=cfg.ownerName ? ('Owner: '+cfg.ownerName) : 'Complete Business Management';
+  };
+
+  // Add settings to backup object when possible by wrapping common backup function names.
+  window.getBusinessSettingsForBackup = function(){
+    return JSON.parse(localStorage.getItem(KEY) || JSON.stringify(defaults));
+  };
+
+  document.addEventListener('input', function(e){
+    if(/^set(BizName|OwnerName|Phone|Address|InvoiceTitle|InvoiceFooter|Currency|LowStock)$/.test(e.target.id)){
+      const cfg = {
+        bizName: document.getElementById('setBizName')?.value || '',
+        ownerName: document.getElementById('setOwnerName')?.value || '',
+        phone: document.getElementById('setPhone')?.value || '',
+        address: document.getElementById('setAddress')?.value || '',
+        invoiceTitle: document.getElementById('setInvoiceTitle')?.value || '',
+        invoiceFooter: document.getElementById('setInvoiceFooter')?.value || '',
+        currency: document.getElementById('setCurrency')?.value || '৳',
+        lowStock: Number(document.getElementById('setLowStock')?.value || 5)
+      };
+      updateInvoicePreview(Object.assign({}, defaults, cfg));
+    }
+  });
+
+  document.addEventListener('DOMContentLoaded', loadBusinessSettings);
+})();
+</script>
+
+
+<script>
+(function(){
+  const money = n => {
+    const cfg = window.slBusinessSettings || {};
+    return (cfg.currency || '৳') + Number(n||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+  };
+  const esc = x => String(x??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  const read = (keys) => {
+    for(const k of keys){
+      try {
+        const v=JSON.parse(localStorage.getItem(k));
+        if(Array.isArray(v)) return v;
+        if(v && typeof v==='object') return v;
+      } catch(e){}
+    }
+    return [];
+  };
+  const arr = v => Array.isArray(v)?v:(v&&Array.isArray(v.items)?v.items:[]);
+
+  window.generateAdvancedReport = function(){
+    const from = document.getElementById('advFrom').value;
+    const to = document.getElementById('advTo').value;
+    if(!from || !to){ alert('Please select From and To dates.'); return; }
+    if(from > to){ alert('From Date cannot be after To Date.'); return; }
+
+    const sales = arr(read(['sl_sales','sales','smart_ledger_sales']));
+    const purchases = arr(read(['sl_purchases','purchases','smart_ledger_purchases']));
+    const expenses = arr(read(['sl_expenses','expenses','smart_ledger_expenses']));
+    const returns = arr(read(['sl_returns','returns','smart_ledger_returns']));
+    const products = arr(read(['sl_products','products','smart_ledger_products']));
+
+    const dateOf = o => String(o.date || o.createdAt || o.created_at || o.invoiceDate || o.purchaseDate || '').slice(0,10);
+    const inRange = o => { const d=dateOf(o); return d>=from && d<=to; };
+    const num = (...xs) => {
+      for(const x of xs){ const n=Number(x); if(Number.isFinite(n)) return n; }
+      return 0;
+    };
+    const totalOf = o => {
+      if(o.total!=null) return num(o.total);
+      if(o.grandTotal!=null) return num(o.grandTotal);
+      if(o.amount!=null) return num(o.amount);
+      if(Array.isArray(o.items)) return o.items.reduce((a,i)=>a+num(i.total, num(i.qty||i.quantity)*num(i.price||i.salePrice)),0);
+      return 0;
+    };
+
+    const rs = sales.filter(inRange), rp=purchases.filter(inRange), re=expenses.filter(inRange);
+    const rr = returns.filter(inRange);
+
+    let saleTotal=rs.reduce((a,o)=>a+totalOf(o),0);
+    let purchaseTotal=rp.reduce((a,o)=>a+totalOf(o),0);
+    let expenseTotal=re.reduce((a,o)=>a+totalOf(o),0);
+    let returnSales=0;
+    rr.forEach(r=>{
+      const typ=String(r.type||r.returnType||'').toLowerCase();
+      if(typ.includes('sale')) returnSales+=totalOf(r);
+    });
+    saleTotal -= returnSales;
+
+    const gross = saleTotal-purchaseTotal;
+    const net = gross-expenseTotal;
+    const margin = saleTotal ? (net/saleTotal*100) : 0;
+
+    document.getElementById('advSales').textContent=money(saleTotal);
+    document.getElementById('advPurchase').textContent=money(purchaseTotal);
+    document.getElementById('advExpense').textContent=money(expenseTotal);
+    document.getElementById('advGross').textContent=money(gross);
+    document.getElementById('advNet').textContent=money(net);
+    document.getElementById('advMargin').textContent=margin.toFixed(2)+'%';
+
+    // Customer report
+    const cust={};
+    rs.forEach(o=>{
+      const name=o.customerName || o.customer || o.clientName || 'Walk-in Customer';
+      cust[name]=(cust[name]||0)+totalOf(o);
+    });
+    document.getElementById('advCustomerTable').innerHTML =
+      Object.keys(cust).length ?
+      '<div style="overflow:auto"><table><tr><th>Customer</th><th>Sales</th></tr>'+
+      Object.entries(cust).sort((a,b)=>b[1]-a[1]).map(([n,v])=>`<tr><td>${esc(n)}</td><td>${money(v)}</td></tr>`).join('')+
+      '</table></div>' : '<p>No customer sales found.</p>';
+
+    // Product report
+    const prod={};
+    rs.forEach(o=>{
+      const items=Array.isArray(o.items)?o.items:[];
+      items.forEach(i=>{
+        const name=i.productName||i.name||i.product||'Unknown Product';
+        const qty=num(i.qty,i.quantity);
+        const revenue=num(i.total, qty*num(i.price,i.salePrice));
+        const cost=qty*num(i.purchasePrice,i.costPrice,i.cost);
+        if(!prod[name]) prod[name]={qty:0,revenue:0,cost:0};
+        prod[name].qty+=qty; prod[name].revenue+=revenue; prod[name].cost+=cost;
+      });
+    });
+    document.getElementById('advProductTable').innerHTML =
+      Object.keys(prod).length ?
+      '<div style="overflow:auto"><table><tr><th>Product</th><th>Qty</th><th>Sales</th><th>Cost</th><th>Profit</th></tr>'+
+      Object.entries(prod).sort((a,b)=>(b[1].revenue-b[1].cost)-(a[1].revenue-a[1].cost)).map(([n,v])=>
+      `<tr><td>${esc(n)}</td><td>${v.qty}</td><td>${money(v.revenue)}</td><td>${money(v.cost)}</td><td>${money(v.revenue-v.cost)}</td></tr>`).join('')+
+      '</table></div>' : '<p>No product-level sales found.</p>';
+
+    // Daily report
+    const days={};
+    const add=(o,type)=>{
+      const d=dateOf(o); if(!d) return;
+      if(!days[d]) days[d]={sales:0,purchase:0,expense:0};
+      days[d][type]+=totalOf(o);
+    };
+    rs.forEach(o=>add(o,'sales')); rp.forEach(o=>add(o,'purchase')); re.forEach(o=>add(o,'expense'));
+    document.getElementById('advDailyTable').innerHTML =
+      Object.keys(days).length ?
+      '<div style="overflow:auto"><table><tr><th>Date</th><th>Sales</th><th>Purchase</th><th>Expense</th><th>Net</th></tr>'+
+      Object.keys(days).sort().reverse().map(d=>{
+        const x=days[d], n=x.sales-x.purchase-x.expense;
+        return `<tr><td>${d}</td><td>${money(x.sales)}</td><td>${money(x.purchase)}</td><td>${money(x.expense)}</td><td>${money(n)}</td></tr>`;
+      }).join('')+'</table></div>' : '<p>No daily data found.</p>';
+  };
+
+  window.printAdvancedReport = function(){
+    const area=document.getElementById('advReportArea');
+    if(!area) return;
+    const w=window.open('','_blank');
+    const cfg=window.slBusinessSettings||{};
+    w.document.write('<html><head><title>Advanced Business Report</title><style>body{font-family:Arial;padding:25px}table{width:100%;border-collapse:collapse;margin:12px 0}th,td{border:1px solid #aaa;padding:7px;text-align:left}h2{text-align:center}</style></head><body>');
+    w.document.write('<h2>'+esc(cfg.bizName||'Smart Ledger')+'</h2>');
+    w.document.write('<p>'+esc(cfg.address||'')+' '+esc(cfg.phone||'')+'</p>');
+    w.document.write('<h3>Advanced Business Report</h3>');
+    w.document.write('<p>Period: '+esc(document.getElementById('advFrom').value)+' to '+esc(document.getElementById('advTo').value)+'</p>');
+    w.document.write(area.innerHTML);
+      w.document.close(); w.focus(); setTimeout(()=>w.print(),300);
+  };
+
+  document.addEventListener('DOMContentLoaded',()=>{
+    const today=new Date().toISOString().slice(0,10);
+    const f=document.getElementById('advFrom'), t=document.getElementById('advTo');
+    if(f && !f.value) f.value=today;
+    if(t && !t.value) t.value=today;
+  });
+})();
+</script>
+<script id="v17-script">
+(function(){
+  const META_KEY='sl_inventory_meta_v17', MOVE_KEY='sl_stock_movements_v17';
+  function v17Load(k){try{return JSON.parse(localStorage.getItem(k)||'[]')}catch(e){return[]}}
+  function v17Save(k,v){localStorage.setItem(k,JSON.stringify(v))}
+  function v17Meta(){return v17Load(META_KEY)}
+  function v17Moves(){return v17Load(MOVE_KEY)}
+  function v17GetMeta(pid){return v17Meta().find(x=>String(x.productId)===String(pid))||{productId:pid,min:0,reorder:0,warehouse:'',batch:'',expiry:''}}
+  function v17Esc(x){return typeof esc==='function'?esc(x):String(x??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+  function v17Money(n){return typeof money==='function'?money(n):'৳'+Number(n||0).toFixed(2)}
+  function v17Products(){return Array.isArray(window.products)?window.products:[]}
+  window.v17FillSelects=function(){
+    const ps=v17Products().filter(p=>p.active!==false);
+    ['v17Product','v17MoveProduct'].forEach(id=>{const el=document.getElementById(id);if(!el)return;const old=el.value;el.innerHTML='<option value="">-- Product Select --</option>'+ps.map(p=>`<option value="${p.id}">${v17Esc(p.name)}</option>`).join('');if(ps.some(p=>String(p.id)===String(old)))el.value=old;});
+  };
+  window.v17LoadSelected=function(){
+    const id=document.getElementById('v17Product')?.value;if(!id)return;const m=v17GetMeta(id);
+    document.getElementById('v17Min').value=m.min??0;document.getElementById('v17Reorder').value=m.reorder??0;document.getElementById('v17Warehouse').value=m.warehouse||'';document.getElementById('v17Batch').value=m.batch||'';document.getElementById('v17ExpiryDate').value=m.expiry||'';
+  };
+  window.v17SaveMeta=function(){
+    const pid=document.getElementById('v17Product')?.value;if(!pid)return alert('Product নির্বাচন করুন');
+    const p=v17Products().find(x=>String(x.id)===String(pid));if(!p)return alert('Product পাওয়া যায়নি');
+    const arr=v17Meta().filter(x=>String(x.productId)!==String(pid));
+    arr.push({productId:p.id,min:+document.getElementById('v17Min').value||0,reorder:+document.getElementById('v17Reorder').value||0,warehouse:document.getElementById('v17Warehouse').value.trim(),batch:document.getElementById('v17Batch').value.trim(),expiry:document.getElementById('v17ExpiryDate').value||''});
+    v17Save(META_KEY,arr);document.getElementById('v17MetaMsg').innerHTML='<div class="v17-ok">✅ Inventory settings saved.</div>';v17Render();
+  };
+  window.v17ClearMeta=function(){['v17Min','v17Reorder','v17Warehouse','v17Batch','v17ExpiryDate'].forEach(id=>{const e=document.getElementById(id);if(e)e.value=''});document.getElementById('v17MetaMsg').innerHTML='';};
+  window.v17MoveStock=function(){
+    const pid=document.getElementById('v17MoveProduct')?.value,type=document.getElementById('v17MoveType')?.value,q=+document.getElementById('v17MoveQty')?.value||0,reason=document.getElementById('v17MoveReason')?.value.trim()||'Manual stock movement',wh=document.getElementById('v17MoveWarehouse')?.value.trim()||'';
+    if(!pid||q<0||(type!=='ADJUST'&&q<=0))return alert('Product এবং সঠিক Quantity দিন');
+    const p=v17Products().find(x=>String(x.id)===String(pid));if(!p)return alert('Product পাওয়া যায়নি');
+    const before=+p.stock||0;let after=before;if(type==='IN')after=before+q;if(type==='OUT'){if(q>before)return alert('স্টকে এত পণ্য নেই');after=before-q}if(type==='ADJUST')after=q;
+    p.stock=after;if(wh){const m=v17GetMeta(pid);const arr=v17Meta().filter(x=>String(x.productId)!==String(pid));arr.push({...m,productId:p.id,warehouse:wh});v17Save(META_KEY,arr);}
+    if(typeof save==='function'&&typeof K!=='undefined')save(K.products,v17Products());else localStorage.setItem('sl_products',JSON.stringify(v17Products()));
+    const moves=v17Moves();moves.push({id:Date.now()+Math.floor(Math.random()*1000),date:new Date().toISOString(),productId:p.id,productName:p.name,type,qty:q,before,after,reason,warehouse:wh||v17GetMeta(pid).warehouse||''});v17Save(MOVE_KEY,moves);
+    document.getElementById('v17MoveQty').value='';document.getElementById('v17MoveReason').value='';document.getElementById('v17MoveWarehouse').value='';
+    if(typeof refreshAll==='function')refreshAll();else v17Render();alert('Stock movement saved successfully.');
+  };
+  function daysUntil(date){if(!date)return null;const a=new Date();a.setHours(0,0,0,0);const b=new Date(date+'T00:00:00');return Math.ceil((b-a)/86400000)}
+  window.v17Render=function(){
+    const ps=v17Products(),meta=v17Meta(),q=(document.getElementById('v17Search')?.value||'').toLowerCase();let qty=0,val=0,low=0,exp=0;const rows=[];
+    ps.forEach(p=>{const m=v17GetMeta(p.id),stock=+p.stock||0,min=+m.min||0,reorder=+m.reorder||0,d=daysUntil(m.expiry);const status=stock<=min&&min>0?'LOW':(reorder>0&&stock<=reorder?'REORDER':'OK');if(status!=='OK')low++;if(d!==null&&d<=30)exp++;qty+=stock;val+=stock*(+p.buy||0);const hay=(p.name+' '+(m.warehouse||'')+' '+(m.batch||'')).toLowerCase();if(!q||hay.includes(q))rows.push({p,m,stock,min,reorder,d,status});});
+    const set=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v};set('v17Products',ps.length);set('v17Qty',qty.toFixed(2));set('v17Value',v17Money(val));set('v17Low',low);set('v17Expiry',exp);
+    const alerts=[];rows.forEach(r=>{if(r.status==='LOW')alerts.push(`<div class="v17-alert">🔴 <b>${v17Esc(r.p.name)}</b> — Stock ${r.stock}, Minimum ${r.min}</div>`);else if(r.status==='REORDER')alerts.push(`<div class="v17-warn">🟠 <b>${v17Esc(r.p.name)}</b> — Reorder level ${r.reorder}, Current ${r.stock}</div>`);if(r.d!==null&&r.d<0)alerts.push(`<div class="v17-alert">⛔ <b>${v17Esc(r.p.name)}</b> — Expired: ${v17Esc(r.m.expiry)}</div>`);else if(r.d!==null&&r.d<=30)alerts.push(`<div class="v17-warn">⚠️ <b>${v17Esc(r.p.name)}</b> — Expiry in ${r.d} day(s): ${v17Esc(r.m.expiry)}</div>`);});
+    document.getElementById('v17Alerts').innerHTML=alerts.join('')||'<div class="v17-ok">✅ কোনো Low Stock/Reorder/Expiry Alert নেই।</div>';
+    document.getElementById('v17Table').innerHTML='<table><tr><th>Product</th><th>Stock</th><th>Min</th><th>Reorder</th><th>Warehouse</th><th>Batch</th><th>Expiry</th><th>Status</th><th>Value</th></tr>'+rows.map(r=>`<tr><td>${v17Esc(r.p.name)}</td><td>${r.stock}</td><td>${r.min}</td><td>${r.reorder}</td><td>${v17Esc(r.m.warehouse)}</td><td>${v17Esc(r.m.batch)}</td><td>${v17Esc(r.m.expiry||'-')}</td><td>${r.status}</td><td>${v17Money(r.stock*(+r.p.buy||0))}</td></tr>`).join('')+'</table>';
+    const moves=v17Moves().slice().reverse().slice(0,100);document.getElementById('v17History').innerHTML=moves.length?'<table><tr><th>Date</th><th>Product</th><th>Type</th><th>Qty</th><th>Before</th><th>After</th><th>Reason</th><th>Warehouse</th></tr>'+moves.map(x=>`<tr><td>${v17Esc((x.date||'').slice(0,16).replace('T',' '))}</td><td>${v17Esc(x.productName)}</td><td>${v17Esc(x.type)}</td><td>${x.qty}</td><td>${x.before}</td><td>${x.after}</td><td>${v17Esc(x.reason)}</td><td>${v17Esc(x.warehouse)}</td></tr>`).join('')+'</table>':'কোনো Stock Movement নেই।';
+  };
+  const oldRefresh=window.refreshAll;window.refreshAll=function(){if(typeof oldRefresh==='function')oldRefresh.apply(this,arguments);setTimeout(function(){v17FillSelects();v17LoadSelected();v17Render();},0)};
+  const oldShow=window.showPage;window.showPage=function(x){if(typeof oldShow==='function')oldShow.apply(this,arguments);if(x==='inventoryControl')setTimeout(function(){v17FillSelects();v17Render();},0)};
+  document.addEventListener('DOMContentLoaded',function(){v17FillSelects();v17Render();const s=document.getElementById('v17Product');if(s)s.addEventListener('change',v17LoadSelected);});
+})();
+</script>
+<script>
+// ===== V17 Menu Editor: Edit existing menu + Add custom menu =====
+(function(){
+  const LABEL_KEY='sl_menu_labels_v17';
+  const CUSTOM_KEY='sl_custom_menus_v17';
+  const pages=[
+    ['dashboard','Dashboard'],['settings','Settings'],['dailyReport','Daily Business'],['products','Products'],['customers','Customers'],['invoice','New Invoice'],['sales','Sales History'],['purchase','Purchase'],['expense','Expense'],['cash','Cash'],['reports','Reports'],['advancedReports','Advanced Reports'],['barcodeQR','Barcode & QR'],['backup','Backup/Restore'],['customerReport','Customer Report'],['stockReport','Stock Report'],['stockAdjust','Stock Adjustment'],['suppliers','Suppliers'],['purchaseInvoice','Purchase Invoice'],['plDashboard','P&L Dashboard'],['returns','Sales/Purchase Return'],['inventoryControl','Advanced Inventory']
+  ];
+  const defaults=Object.fromEntries(pages.map(x=>[x[0],x[1]]));
+  function loadJson(k,f){try{return JSON.parse(localStorage.getItem(k)||JSON.stringify(f))}catch(e){return f}}
+  function saveJson(k,v){localStorage.setItem(k,JSON.stringify(v))}
+  function navButton(page){return Array.from(document.querySelectorAll('nav button')).find(b=>{const oc=b.getAttribute('onclick')||'';return oc.includes("showPage('"+page+"')")})}
+  function applyLabels(){
+    const labels=loadJson(LABEL_KEY,{});
+    pages.forEach(([id,def])=>{const b=navButton(id);if(b)b.textContent=labels[id]||def});
+  }
+  function renderCustom(){
+    const box=document.getElementById('customMenuButtons'); if(!box)return;
+    const items=loadJson(CUSTOM_KEY,[]);
+    box.innerHTML='';
+    items.forEach((m,i)=>{
+      const b=document.createElement('button');b.className='menu-custom-btn';b.textContent=m.label;b.onclick=function(){showPage(m.page)};b.title='Custom Menu';box.appendChild(b);
+    });
+    const list=document.getElementById('customMenuList'); if(!list)return;
+    if(!items.length){list.innerHTML='<p>কোনো Custom Menu যোগ করা হয়নি।</p>';return}
+    list.innerHTML='<table><tr><th>Menu</th><th>Page</th><th>Action</th></tr>'+items.map((m,i)=>'<tr><td>'+esc(m.label)+'</td><td>'+esc((pages.find(p=>p[0]===m.page)||['',m.page])[1])+'</td><td><button class="danger" onclick="removeCustomMenu('+i+')">Delete</button></td></tr>').join('')+'</table>';
+  }
+  window.populateMenuEditor=function(){
+    const sel=document.getElementById('meExisting'),ps=document.getElementById('meNewPage');if(!sel||!ps)return;
+    const labels=loadJson(LABEL_KEY,{});
+    sel.innerHTML=pages.map(([id,def])=>'<option value="'+id+'">'+esc(labels[id]||def)+'</option>').join('');
+    ps.innerHTML=pages.map(([id,def])=>'<option value="'+id+'">'+esc(labels[id]||def)+'</option>').join('');
+    const current=sel.value; document.getElementById('meLabel').value=labels[current]||defaults[current]||'';
+    sel.onchange=function(){const l=loadJson(LABEL_KEY,{});document.getElementById('meLabel').value=l[this.value]||defaults[this.value]||''};
+    renderCustom();
+  };
+  window.saveMenuLabel=function(){
+    const id=document.getElementById('meExisting').value,label=document.getElementById('meLabel').value.trim();if(!label)return alert('Menu Name দিন');
+    const labels=loadJson(LABEL_KEY,{});labels[id]=label;saveJson(LABEL_KEY,labels);applyLabels();populateMenuEditor();alert('Menu name updated.');
+  };
+  window.resetMenuLabels=function(){if(!confirm('সব Menu Name আগের নামে ফেরত দেবেন?'))return;localStorage.removeItem(LABEL_KEY);applyLabels();populateMenuEditor();alert('Menu names reset.');};
+  window.addCustomMenu=function(){
+    const label=document.getElementById('meNewLabel').value.trim(),page=document.getElementById('meNewPage').value;if(!label)return alert('Menu Name দিন');
+    const items=loadJson(CUSTOM_KEY,[]);items.push({id:Date.now(),label,page});saveJson(CUSTOM_KEY,items);document.getElementById('meNewLabel').value='';renderCustom();alert('New Menu added.');
+  };
+  window.removeCustomMenu=function(i){const items=loadJson(CUSTOM_KEY,[]);if(!items[i])return;if(!confirm('এই Custom Menu মুছে ফেলবেন?'))return;items.splice(i,1);saveJson(CUSTOM_KEY,items);renderCustom();};
+  const oldShow=window.showPage;
+  window.showPage=function(x){if(typeof oldShow==='function')oldShow(x);if(x==='menuEditor')populateMenuEditor();};
+  document.addEventListener('DOMContentLoaded',function(){applyLabels();renderCustom();});
+  setTimeout(function(){applyLabels();renderCustom()},100);
+})();
+</script>
+
+
+<script>
+// ===== Smart Ledger V15: Barcode & QR (cleaned) =====
+function v15Refresh(){const s=document.getElementById('v15Product');if(!s)return;s.innerHTML='<option value="">Product select</option>'+products.map(p=>`<option value="${p.id}">${esc(p.name)}</option>`).join('');v15Table();}
+function v15Load(){const p=products.find(x=>String(x.id)===String(document.getElementById('v15Product').value));if(!p)return;document.getElementById('v15Barcode').value=p.barcode||'';document.getElementById('v15QR').value=p.qrCode||'';v15QRGen();}
+function v15Save(){const p=products.find(x=>String(x.id)===String(document.getElementById('v15Product').value));if(!p)return alert('Product select করুন।');p.barcode=document.getElementById('v15Barcode').value.trim();p.qrCode=document.getElementById('v15QR').value.trim();save(K.products,products);v15Table();alert('Barcode/QR saved.');}
+function v15QRGen(){const p=products.find(x=>String(x.id)===String(document.getElementById('v15Product').value));if(!p)return alert('Product select করুন।');const code=document.getElementById('v15QR').value.trim()||document.getElementById('v15Barcode').value.trim()||String(p.id);const box=document.getElementById('v15QRBox');if(!box)return;box.innerHTML='<div style="font-size:18px;font-weight:bold">'+esc(p.name)+'</div><div style="font-size:24px;letter-spacing:2px;margin:12px">'+esc(code)+'</div><div>Stock: '+(Number(p.stock)||0)+'</div>';}
+function v15SearchCode(){const q=document.getElementById('v15Search').value.trim().toLowerCase(),r=document.getElementById('v15Result');if(!q){r.innerHTML='';return;}const a=products.filter(p=>String(p.barcode||'').toLowerCase()===q||String(p.qrCode||'').toLowerCase()===q);r.innerHTML=a.length?a.map(p=>'<div>'+esc(p.name)+' — Stock: '+(Number(p.stock)||0)+'</div>').join(''):'কোনো পণ্য পাওয়া যায়নি।';}
+function v15Table(){const b=document.getElementById('v15Table');if(!b)return;b.innerHTML=products.map(p=>`<tr><td>${esc(p.name)}</td><td>${esc(p.barcode||'-')}</td><td>${esc(p.qrCode||'-')}</td><td>${p.stock||0}</td></tr>`).join('');}
+function v15Print(){const box=document.getElementById('v15QRBox');if(!box||!box.innerHTML.trim())return alert('Generate QR first.');const w=window.open('','_blank');if(!w)return;w.document.write('<!doctype html><html><head><title>QR Code</title><meta name="viewport" content="width=device-width,initial-scale=1"></head><body style="text-align:center;font-family:Arial;padding:30px">'+box.innerHTML+'</body></html>');w.document.close();w.focus();setTimeout(()=>w.print(),300);}
+document.addEventListener('DOMContentLoaded',()=>setTimeout(v15Refresh,200));
+</script>
+
+<script>
+// Compact 3-dot menu: Dashboard stays visible, all other menus live inside dropdown.
+(function(){
+  window.slToggleMainMenu=function(e){if(e)e.stopPropagation();const box=document.getElementById('slMenuDropdown');if(!box)return;box.classList.toggle('open');};
+  window.slCloseMainMenu=function(){const box=document.getElementById('slMenuDropdown');if(box)box.classList.remove('open');};
+  document.addEventListener('click',function(e){const nav=document.querySelector('.sl-main-nav');if(nav&&!nav.contains(e.target))slCloseMainMenu();});
+  document.addEventListener('DOMContentLoaded',function(){
+    const box=document.getElementById('slMenuDropdown');if(!box)return;
+    box.addEventListener('click',function(e){if(e.target.closest('button') && !e.target.closest('#slMenuToggle')) setTimeout(slCloseMainMenu,80);});
+  });
+})();
+</script>
+<script>
+// ===== Smart Ledger V16: Logo + Professional Animation =====
+(function(){
+  const LOGO_KEY='sl_business_logo_v16';
+  function getLogo(){return localStorage.getItem(LOGO_KEY)||''}
+  function setImg(id,src){const el=document.getElementById(id);if(!el)return;if(src){el.src=src;el.style.display='block'}else{el.removeAttribute('src');el.style.display='none'}}
+  window.v16ApplyLogo=function(){
+    const src=getLogo();
+    setImg('slHeaderLogo',src);
+    setImg('slInvoiceLogo',src);
+    setImg('slPreviewLogo',src);
+    const fb=document.getElementById('slHeaderLogoFallback'); if(fb)fb.style.display=src?'none':'inline';
+    const pv=document.getElementById('v16LogoPreview'); const empty=document.getElementById('v16LogoEmpty');
+    if(pv){if(src){pv.src=src;pv.style.display='block';if(empty)empty.style.display='none'}else{pv.removeAttribute('src');pv.style.display='none';if(empty)empty.style.display='inline'}}
+  };
+  window.v16SaveLogo=function(){
+    const input=document.getElementById('v16LogoInput'); if(!input||!input.files||!input.files[0])return alert('আগে একটি Logo নির্বাচন করুন।');
+    const file=input.files[0]; if(file.size>2*1024*1024)return alert('Logo 2MB-এর মধ্যে রাখুন।');
+    const reader=new FileReader();
+    reader.onload=function(){localStorage.setItem(LOGO_KEY,reader.result);v16ApplyLogo();const box=document.querySelector('.v16-logo-card');if(box){box.classList.remove('v16-save-flash');void box.offsetWidth;box.classList.add('v16-save-flash')}alert('Logo saved successfully.');};
+    reader.readAsDataURL(file);
+  };
+  window.v16RemoveLogo=function(){if(!getLogo())return alert('কোনো Logo সংরক্ষিত নেই।');if(!confirm('Logo remove করবেন?'))return;localStorage.removeItem(LOGO_KEY);const input=document.getElementById('v16LogoInput');if(input)input.value='';v16ApplyLogo();alert('Logo removed.');};
+  window.v16AnimateStats=function(){document.querySelectorAll('.stat b').forEach(el=>{el.classList.remove('v16StatTick');void el.offsetWidth;el.classList.add('v16StatTick')})};
+  const oldRefresh=window.refreshAll;
+  if(typeof oldRefresh==='function'){window.refreshAll=function(){oldRefresh();setTimeout(v16ApplyLogo,0);setTimeout(v16AnimateStats,20)}}
+  const oldLoad=window.loadBusinessSettings;
+  if(typeof oldLoad==='function'){window.loadBusinessSettings=function(){const r=oldLoad.apply(this,arguments);setTimeout(v16ApplyLogo,0);return r}}
+  // Include logo in the existing JSON backup when the backup function is called.
+  const oldBackup=window.downloadBackup;
+  if(typeof oldBackup==='function'){
+    window.downloadBackup=function(){
+      try{
+        const data={app:'Smart Ledger',version:'V16',createdAt:new Date().toISOString(),logoV16:getLogo(),products:window.products,customers:window.customers,sales:window.sales,purchases:window.purchases,expenses:window.expenses};
+        // Use the app's existing backup where possible, while separately preserving logo.
+        if(window.localStorage){data.businessLogo=getLogo()}
+      }catch(e){}
+      return oldBackup.apply(this,arguments);
+    };
+  }
+  document.addEventListener('DOMContentLoaded',function(){
+    v16ApplyLogo();
+    const input=document.getElementById('v16LogoInput');
+    if(input)input.addEventListener('change',function(){
+      const f=input.files&&input.files[0];if(!f)return;
+      const r=new FileReader();r.onload=e=>{const pv=document.getElementById('v16LogoPreview'),empty=document.getElementById('v16LogoEmpty');if(pv){pv.src=e.target.result;pv.style.display='block'}if(empty)empty.style.display='none'};r.readAsDataURL(f);
+    });
+  });
+})();
+
+// ===== Smart Ledger V18 Advanced Invoice & Receipt =====
+let v18Items=[];
+function v18Money(n){return money(Number(n)||0)}
+function v18InvoiceNo(){return 'INV-'+new Date().getFullYear()+'-A'+String((sales||[]).length+1).padStart(4,'0')}
+function v18New(){
+ v18Items=[]; v18InvNo.value=v18InvoiceNo(); v18Date.value=today(); v18Discount.value=0; v18Tax.value=0; v18Paid.value=0;
+ v18Customer.value='';v18Phone.value='';v18Product.value='';v18Stock.value='';v18Qty.value='';v18Price.value='';v18Line.value='';
+ v18RenderItems();v18Recalc();
+}
+function v18LoadOptions(){
+ v18Customer.innerHTML='<option value="">Cash Customer</option>'+(customers||[]).map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('');
+ v18Product.innerHTML='<option value="">Select Product</option>'+(products||[]).filter(p=>p.active!==false).map(p=>`<option value="${p.id}">${esc(p.name)} — Stock ${p.stock}</option>`).join('');
+}
+function v18ProductInfo(){let p=products.find(x=>x.id==v18Product.value);v18Stock.value=p?.stock??'';v18Price.value=p?.sell??'';v18Calc()}
+function v18Calc(){v18Line.value=((+v18Qty.value||0)*(+v18Price.value||0)).toFixed(2)}
+function v18AddItem(){let p=products.find(x=>x.id==v18Product.value),q=+v18Qty.value||0,pr=+v18Price.value||0;if(!p||q<=0)return alert('পণ্য ও সঠিক Quantity দিন');let already=v18Items.filter(x=>x.productId===p.id).reduce((a,x)=>a+x.qty,0);if(q+already>p.stock)return alert('স্টকের চেয়ে বেশি বিক্রি করা যাবে না');v18Items.push({productId:p.id,name:p.name,qty:q,price:pr,total:q*pr});v18Product.value='';v18Stock.value='';v18Qty.value='';v18Price.value='';v18Line.value='';v18RenderItems();v18Recalc()}
+function v18RenderItems(){let box=document.getElementById('v18Items');if(!v18Items.length){box.innerHTML='<p class="muted">কোনো পণ্য যোগ করা হয়নি।</p>';return}box.innerHTML='<div class="table-wrap"><table><tr><th>পণ্য</th><th>Qty</th><th>Rate</th><th>Total</th><th></th></tr>'+v18Items.map((x,i)=>`<tr><td>${esc(x.name)}</td><td>${x.qty}</td><td>${v18Money(x.price)}</td><td>${v18Money(x.total)}</td><td><button class="danger" onclick="v18Items.splice(${i},1);v18RenderItems();v18Recalc()">X</button></td></tr>`).join('')+'</table></div>'}
+function v18Recalc(){let sub=v18Items.reduce((a,x)=>a+x.total,0),disc=Math.max(0,+v18Discount.value||0),tax=Math.max(0,+v18Tax.value||0),grand=Math.max(0,sub-disc+tax),paid=Math.max(0,+v18Paid.value||0);v18Subtotal.textContent=v18Money(sub);v18DiscountShow.textContent=v18Money(disc);v18TaxShow.textContent=v18Money(tax);v18Grand.textContent=v18Money(grand);v18Change.textContent=v18Money(Math.max(0,paid-grand));return{sub,disc,tax,grand,paid,change:Math.max(0,paid-grand)}}
+function v18Save(){let z=v18Recalc();if(!v18Items.length)return alert('কমপক্ষে একটি পণ্য যোগ করুন');if(z.paid<z.grand)return alert('Cash Received Grand Total-এর চেয়ে কম হতে পারবে না।');let cid=v18Customer.value||'',c=customers.find(x=>x.id==cid);for(let x of v18Items){let p=products.find(y=>y.id===x.productId);if(!p||x.qty>p.stock)return alert('স্টক পরিবর্তিত হয়েছে, আবার যাচাই করুন')}v18Items.forEach(x=>{let p=products.find(y=>y.id===x.productId);p.stock-=x.qty});sales.push({id:id(),invoice:v18InvNo.value,date:v18Date.value||today(),customerId:cid,customerName:c?.name||'Cash Customer',phone:c?.phone||'',items:v18Items.map(x=>({...x})),subtotal:z.sub,discount:z.disc,tax:z.tax,total:z.grand,paid:z.paid,change:z.change,payment:'Cash'});save(K.products,products);save(K.sales,sales);alert('V18 Invoice saved successfully');refreshAll();v18New()}
+function v18Print(){let z=v18Recalc();if(!v18Items.length)return alert('আগে পণ্য যোগ করুন');let bs=window.getBusinessSettingsForBackup?window.getBusinessSettingsForBackup():{};let logo=localStorage.getItem('sl_business_logo_v16')||'';let cust=v18Customer.options[v18Customer.selectedIndex]?.text||'Cash Customer';let rows=v18Items.map(x=>`<tr><td>${esc(x.name)}</td><td>${x.qty}</td><td>${v18Money(x.price)}</td><td>${v18Money(x.total)}</td></tr>`).join('');let area=document.getElementById('v18PrintArea');area.innerHTML=`<div style="font-family:Arial,sans-serif;max-width:760px;margin:auto"><div style="text-align:center">${logo?`<img src="${logo}" style="max-width:90px;max-height:70px"><br>`:''}<h1 style="margin:5px 0">${esc(bs.bizName||bs.businessName||'Smart Ledger')}</h1><div>${esc(bs.address||'')}</div><div>${esc(bs.phone||'')}</div><h2>${esc(bs.invoiceTitle||'Sales Invoice / Cash Memo')}</h2></div><hr><p><b>Invoice:</b> ${esc(v18InvNo.value)} &nbsp; <b>Date:</b> ${esc(v18Date.value)}<br><b>Customer:</b> ${esc(cust)}</p><table style="width:100%;border-collapse:collapse"><tr><th style="border:1px solid #ccc;padding:7px">Product</th><th style="border:1px solid #ccc;padding:7px">Qty</th><th style="border:1px solid #ccc;padding:7px">Rate</th><th style="border:1px solid #ccc;padding:7px">Total</th></tr>${rows}</table><div style="margin-top:15px;text-align:right"><p>Subtotal: ${v18Money(z.sub)}</p><p>Discount: ${v18Money(z.disc)}</p><p>VAT/Tax: ${v18Money(z.tax)}</p><h2>Grand Total: ${v18Money(z.grand)}</h2><p>Cash Received: ${v18Money(z.paid)}</p><p>Change: ${v18Money(z.change)}</p></div><hr><p style="text-align:center">${esc(bs.invoiceFooter||'Thank you for your business')}</p></div>`;area.style.display='block';document.body.classList.add('v18-printing');window.print();setTimeout(()=>{document.body.classList.remove('v18-printing');area.style.display='none'},500)}
+function v18RefreshHook(){v18LoadOptions()}
+
+document.addEventListener('DOMContentLoaded',()=>{setTimeout(()=>{v18LoadOptions();v18New()},250)});
+</script>
+
+<section id="securityCenter" class="page">
+<div class="card v19-safe"><h2>🔐 Security Center — V19</h2><p>Smart Ledger-এর ডাটা নিরাপদে Backup, Restore এবং যাচাই করার জন্য এই অংশ।</p><div class="grid"><div class="stat"><span>Security Status</span><b id="v19Status">Ready</b></div><div class="stat"><span>Local Data Items</span><b id="v19DataCount">0</b></div><div class="stat"><span>Last Secure Backup</span><b id="v19LastBackup">—</b></div></div></div>
+<div class="card"><h3>🔒 Encrypted Backup</h3><p class="v19-muted">Password দিয়ে Backup encrypt হবে। Password ছাড়া Secure Backup-এর ডাটা পড়া যাবে না।</p><div class="grid"><div><label>Backup Password</label><input id="v19BackupPass" type="password" minlength="6" placeholder="কমপক্ষে 6 অক্ষর"></div><div><label>Confirm Password (Restore)</label><input id="v19BackupPass2" type="password" minlength="6" placeholder="Backup Password দিন"></div></div><br><button class="green" onclick="v19SecureExport()">🔒 Secure Backup Download</button> <button class="secondary" onclick="document.getElementById('v19RestoreFile').click()">🔓 Secure Backup Restore</button><input id="v19RestoreFile" type="file" accept=".slbackup,.json,application/json" style="display:none" onchange="v19SecureRestore(event)"><p id="v19Msg" class="muted"></p></div>
+<div class="card"><h3>🛡️ Data Safety Check</h3><p>গুরুত্বপূর্ণ Smart Ledger ডাটা দ্রুত পরীক্ষা করুন।</p><button onclick="v19CheckData()">🔎 Run Safety Check</button><div id="v19CheckBox" style="margin-top:10px"></div></div>
+<div class="card v19-warn"><h3>⚠️ Backup Rules</h3><ul><li>নিয়মিত Secure Backup রাখুন।</li><li>Backup Password নিরাপদে সংরক্ষণ করুন—ভুলে গেলে encrypted backup খোলা যাবে না।</li><li>একটি Backup ফোনে এবং আরেকটি Google Drive/কম্পিউটারে রাখুন।</li></ul></div>
+</section>
+<script>
+// Smart Ledger V19: Secure Backup & Data Safety
+(function(){
+const V19_META='sl_v19_meta',enc=new TextEncoder(),dec=new TextDecoder();
+function b64(buf){let bin='';const a=new Uint8Array(buf);for(let i=0;i<a.length;i++)bin+=String.fromCharCode(a[i]);return btoa(bin)}
+function unb64(s){const bin=atob(s),a=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)a[i]=bin.charCodeAt(i);return a}
+function meta(){try{return JSON.parse(localStorage.getItem(V19_META)||'{}')}catch(e){return {}}}
+function allSLData(){const d={};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&k.indexOf('sl_')===0)d[k]=localStorage.getItem(k)}return d}
+async function keyFor(pass,salt){const base=await crypto.subtle.importKey('raw',enc.encode(pass),'PBKDF2',false,['deriveKey']);return crypto.subtle.deriveKey({name:'PBKDF2',salt,iterations:150000,hash:'SHA-256'},base,{name:'AES-GCM',length:256},false,['encrypt','decrypt'])}
+window.v19SecureExport=async function(){
+const p=(document.getElementById('v19BackupPass')||{}).value||'',msg=document.getElementById('v19Msg');
+if(p.length<6)return alert('Password কমপক্ষে 6 অক্ষরের দিন।');
+if(!crypto.subtle)return alert('এই Browser-এ Secure Encryption support নেই।');
+try{
+msg.textContent='Backup encrypt করা হচ্ছে...';
+const payload={app:'Smart Ledger',version:'V19',createdAt:new Date().toISOString(),data:allSLData()};
+const salt=crypto.getRandomValues(new Uint8Array(16)),iv=crypto.getRandomValues(new Uint8Array(12));
+const key=await keyFor(p,salt),cipher=await crypto.subtle.encrypt({name:'AES-GCM',iv},key,enc.encode(JSON.stringify(payload)));
+const out={format:'SmartLedgerSecureBackup',version:1,salt:b64(salt),iv:b64(iv),ciphertext:b64(cipher)};
+const filename='Smart_Ledger_Secure_Backup_'+new Date().toISOString().slice(0,10)+'.slbackup';
+const textData=JSON.stringify(out);
+const blob=new Blob([textData],{type:'application/octet-stream'});
+
+// Acode Android WebView can crash when an <a download> click reaches its DownloadManager.
+// Do not use the automatic download attribute. Prefer Android Share/File picker; otherwise open the backup safely.
+if(window.showSaveFilePicker){
+  try{
+    const handle=await window.showSaveFilePicker({suggestedName:filename,types:[{description:'Smart Ledger Secure Backup',accept:{'application/octet-stream':['.slbackup']}}]});
+    const writable=await handle.createWritable();await writable.write(blob);await writable.close();
+  }catch(e){if(e&&e.name==='AbortError'){msg.textContent='Backup save বাতিল করা হয়েছে।';return}throw e}
+}else if(navigator.share && typeof File!=='undefined'){
+  try{
+    const file=new File([textData],filename,{type:'application/octet-stream'});
+    if(!navigator.canShare || navigator.canShare({files:[file]})){
+      await navigator.share({title:'Smart Ledger Secure Backup',text:'Smart Ledger encrypted backup',files:[file]});
+    }else throw new Error('file-share-not-supported');
+  }catch(e){
+    if(e&&e.name==='AbortError'){msg.textContent='Backup share বাতিল করা হয়েছে।';return}
+    const url=URL.createObjectURL(blob);window.open(url,'_blank');setTimeout(()=>URL.revokeObjectURL(url),60000);
+    alert('Backup ফাইলটি নতুন ট্যাবে খোলা হয়েছে। Acode crash এড়াতে automatic download বন্ধ রাখা হয়েছে। সেখানে Save/Share ব্যবহার করুন।');
+  }
+}else{
+  const url=URL.createObjectURL(blob);window.open(url,'_blank');setTimeout(()=>URL.revokeObjectURL(url),60000);
+  alert('Backup ফাইলটি নতুন ট্যাবে খোলা হয়েছে। Acode crash এড়াতে automatic download বন্ধ রাখা হয়েছে। সেখানে Save/Share ব্যবহার করুন।');
+}
+localStorage.setItem(V19_META,JSON.stringify({last:new Date().toISOString(),items:Object.keys(payload.data).length}));
+msg.textContent='✅ Secure Backup তৈরি হয়েছে।';v19Refresh();
+}catch(e){msg.textContent='❌ Backup তৈরি করা যায়নি।';alert('Secure Backup ব্যর্থ হয়েছে। '+(e&&e.message?e.message:''))}
+};
+window.v19SecureRestore=async function(event){const file=event.target.files[0];if(!file)return;const p=(document.getElementById('v19BackupPass2')||{}).value||'',msg=document.getElementById('v19Msg');if(p.length<6){alert('Restore করার আগে Backup Password দিন।');event.target.value='';return}try{msg.textContent='Secure Backup যাচাই করা হচ্ছে...';const o=JSON.parse(await file.text());if(o.format!=='SmartLedgerSecureBackup')throw 0;const key=await keyFor(p,unb64(o.salt)),plain=await crypto.subtle.decrypt({name:'AES-GCM',iv:unb64(o.iv)},key,unb64(o.ciphertext)),payload=JSON.parse(dec.decode(plain));if(!payload.data)throw 0;if(!confirm('বর্তমান Smart Ledger ডাটা Secure Backup-এর ডাটা দিয়ে Replace হবে। নিশ্চিত?')){event.target.value='';return}Object.keys(payload.data).forEach(k=>{if(k.indexOf('sl_')===0)localStorage.setItem(k,payload.data[k])});alert('✅ Secure Backup Restore সফল হয়েছে।');location.reload()}catch(e){msg.textContent='❌ Password ভুল অথবা Backup ফাইল নষ্ট।';alert('Restore করা যায়নি। Password ঠিক আছে কি না দেখুন।')}event.target.value=''};
+window.v19CheckData=function(){const d=allSLData(),need=['sl_products','sl_customers','sl_sales','sl_purchase','sl_expense','sl_users'];const rows=need.map(k=>{let ok=!!d[k];if(ok){try{JSON.parse(d[k])}catch(e){ok=false}}return '<tr><td>'+k+'</td><td>'+(ok?'✅ OK':'⚠️ Missing/Invalid')+'</td></tr>'}).join('');const b=document.getElementById('v19CheckBox');if(b)b.innerHTML='<div class="table-scroll"><table><tr><th>Data</th><th>Status</th></tr>'+rows+'</table></div><p><b>Total local Smart Ledger items:</b> '+Object.keys(d).length+'</p>'};
+window.v19Refresh=function(){const d=allSLData(),m=meta(),c=document.getElementById('v19DataCount'),l=document.getElementById('v19LastBackup'),s=document.getElementById('v19Status');if(c)c.textContent=Object.keys(d).length;if(l)l.textContent=m.last?new Date(m.last).toLocaleString():'—';if(s)s.innerHTML='<span class="v19-badge">Local data + backup protection</span>'};
+const old=window.refreshAll;if(typeof old==='function')window.refreshAll=function(){old();setTimeout(v19Refresh,0)};document.addEventListener('DOMContentLoaded',v19Refresh);
+})();
+</script>
+<style id="sl-v20-notify-menu-style">
+.v16-header{position:relative}.sl-notify-wrap{position:absolute;right:14px;top:14px;z-index:1000}.sl-notify-btn{position:relative;border:0!important;background:#fff!important;color:#173f5f!important;border-radius:50%!important;width:48px;height:48px;padding:0!important;font-size:23px!important;box-shadow:0 3px 12px rgba(0,0,0,.18);cursor:pointer}.sl-notify-badge{position:absolute;right:-2px;top:-4px;min-width:20px;height:20px;padding:2px 5px;border-radius:12px;background:#dc2626;color:#fff;font-size:11px;line-height:16px;font-weight:700}.sl-notify-panel{display:none;position:absolute;right:0;top:56px;width:min(340px,calc(100vw - 28px));background:#fff;color:#222;border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.2);overflow:hidden}.sl-notify-panel.open{display:block;animation:slDrop .18s ease both}@keyframes slDrop{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}.sl-notify-head{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-bottom:1px solid #eee}.sl-notify-head button{background:none!important;color:#666!important;padding:4px 7px!important;font-size:12px!important}.sl-notify-item{padding:11px 14px;border-bottom:1px solid #f0f0f0;font-size:14px}.sl-notify-item b{display:block;margin-bottom:3px}.sl-notify-empty{padding:18px 14px;color:#777;text-align:center}.menu-arrange-btn{background:#455a64!important;color:#fff!important;font-weight:700}.sl-arrange-row{display:flex;align-items:center;gap:8px;padding:10px;margin:6px 0;background:#fff;border:1px solid #ddd;border-radius:10px;box-shadow:0 2px 7px rgba(0,0,0,.05)}.sl-arrange-name{flex:1;font-weight:600}.sl-arrange-actions{display:flex;gap:5px}.sl-arrange-actions button{padding:7px 10px!important;min-width:40px}.sl-arrange-disabled{opacity:.45}.sl-menu-hidden{display:none!important}@media(max-width:600px){.sl-notify-wrap{right:8px;top:8px}.sl-notify-btn{width:42px;height:42px;font-size:20px!important}.v16-brand{padding-right:48px}}
+</style>
+<script>
+(function(){
+  const ORDER_KEY='sl_menu_order_v20';
+  const BASE=[
+    ['dashboard','Dashboard'],['settings','⚙️ Settings'],['dailyReport','📅 Daily Business'],['products','Products'],['customers','Customers'],['invoice','New Invoice'],['sales','Sales History'],['purchase','Purchase'],['expense','Expense'],['cash','Cash'],['reports','Reports'],['advancedReports','📊 Advanced Reports'],['barcodeQR','📦 Barcode & QR'],['backup','Backup/Restore'],['customerReport','Customer Report'],['stockReport','Stock Report'],['stockAdjust','Stock Adjustment'],['suppliers','Suppliers'],['purchaseInvoice','Purchase Invoice'],['plDashboard','P&L Dashboard'],['returns','↩️ Sales/Purchase Return'],['inventoryControl','📦 Advanced Inventory'],['invoiceAdvanced','🧾 Invoice & Receipt'],['securityCenter','🔐 Security Center'],['menuEditor','☰ Menu Edit'],['menuArrange','↕️ Menu সাজান']
+  ];
+  function getOrder(){try{return JSON.parse(localStorage.getItem(ORDER_KEY)||'[]')}catch(e){return []}}
+  function saveOrder(a){localStorage.setItem(ORDER_KEY,JSON.stringify(a))}
+  function navButtons(){return Array.from(document.querySelectorAll('nav button'))}
+  function pageOf(b){const oc=b.getAttribute('onclick')||'';const m=oc.match(/showPage\('([^']+)'\)/);return m?m[1]:''}
+  function labelOf(b){return (b.textContent||'').trim()}
+  function currentIds(){return navButtons().map(pageOf).filter(p=>p&&p!=='dashboard')}
+  function applyOrder(){
+    const nav=document.querySelector('nav'); const box=document.getElementById('slMenuDropdown'); if(!nav||!box)return;
+    const btns=navButtons();
+    const map={}; btns.forEach(b=>{const p=pageOf(b);if(p)map[p]=b});
+    const custom=document.getElementById('customMenuButtons');
+    const customBtns=custom?Array.from(custom.children):[];
+    let order=getOrder();
+    const known=currentIds();
+    order=order.filter(id=>known.includes(id));
+    known.forEach(id=>{if(!order.includes(id))order.push(id)});
+    saveOrder(order);
+    order.forEach(id=>{if(map[id])box.appendChild(map[id])});
+    if(custom){customBtns.forEach(b=>custom.appendChild(b));box.appendChild(custom)}
+  }
+  window.slMoveMenu=function(id,dir){
+    let order=getOrder(); const ids=currentIds();
+    if(!order.length) order=ids.slice();
+    ids.forEach(x=>{if(!order.includes(x))order.push(x)}); order=order.filter(x=>ids.includes(x));
+    const i=order.indexOf(id),j=i+dir;if(i<0||j<0||j>=order.length)return;
+    [order[i],order[j]]=[order[j],order[i]];saveOrder(order);applyOrder();slRenderMenuArrange();
+  };
+  window.slResetMenuOrder=function(){localStorage.removeItem(ORDER_KEY);applyOrder();slRenderMenuArrange();alert('Menu default order-এ ফিরে গেছে।')};
+  window.slRenderMenuArrange=function(){
+    const box=document.getElementById('menuArrangeList');if(!box)return;
+    const ids=currentIds();let order=getOrder();if(!order.length)order=ids.slice();ids.forEach(x=>{if(!order.includes(x))order.push(x)});order=order.filter(x=>ids.includes(x));saveOrder(order);
+    const btnMap={};navButtons().forEach(b=>{const p=pageOf(b);if(p)btnMap[p]=b});
+    box.innerHTML=order.map((id,i)=>{const b=btnMap[id];const name=b?labelOf(b):(BASE.find(x=>x[0]===id)||[id,id])[1];return '<div class="sl-arrange-row"><span class="sl-arrange-name">'+esc(name)+'</span><div class="sl-arrange-actions"><button class="secondary '+(i===0?'sl-arrange-disabled':'')+'" '+(i===0?'disabled':'')+' onclick="slMoveMenu(\''+id+'\',-1)">↑</button><button class="secondary '+(i===order.length-1?'sl-arrange-disabled':'')+'" '+(i===order.length-1?'disabled':'')+' onclick="slMoveMenu(\''+id+'\',1)">↓</button></div></div>'}).join('');
+  };
+  const oldShow=window.showPage;
+  window.showPage=function(x){if(typeof oldShow==='function')oldShow(x);if(x==='menuArrange')setTimeout(slRenderMenuArrange,0);if(x==='securityCenter'&&typeof v19Refresh==='function')v19Refresh()};
+  function slNotifications(){
+    const out=[]; const low=[]; const now=Date.now();
+    (window.products||[]).forEach(p=>{const st=Number(p.stock||0),min=Number(p.minStock??p.reorderLevel??5);if(st<=0)low.push({type:'danger',text:p.name+' — Stock শেষ।'});else if(st<=min)low.push({type:'warn',text:p.name+' — Stock কম ('+st+').'})});
+    low.slice(0,12).forEach(x=>out.push(x));
+    const last=Number(localStorage.getItem('sl_last_backup_time')||0); if(last&&now-last>7*86400000)out.push({type:'warn',text:'শেষ Backup ৭ দিনের বেশি আগে হয়েছে।'});
+    return out;
+  }
+  window.slRenderNotifications=function(){const list=document.getElementById('slNotifyList'),badge=document.getElementById('slNotifyBadge');if(!list||!badge)return;const ns=slNotifications();badge.textContent=ns.length>99?'99+':ns.length;badge.style.display=ns.length?'block':'none';list.innerHTML=ns.length?ns.map(n=>'<div class="sl-notify-item"><b>'+((n.type==='danger')?'🔴':'🟠')+' Smart Ledger</b>'+esc(n.text)+'</div>').join(''):'<div class="sl-notify-empty">কোনো নতুন Notification নেই।</div>'};
+  window.slToggleNotifications=function(){const p=document.getElementById('slNotifyPanel');if(!p)return;p.classList.toggle('open');slRenderNotifications()};
+  window.slClearNotifications=function(){const list=document.getElementById('slNotifyList');if(list)list.innerHTML='<div class="sl-notify-empty">Notification clear করা হয়েছে।</div>';const b=document.getElementById('slNotifyBadge');if(b){b.textContent='0';b.style.display='none'}document.getElementById('slNotifyPanel')?.classList.remove('open')};
+  document.addEventListener('DOMContentLoaded',function(){setTimeout(function(){applyOrder();slRenderNotifications()},120)});
+document.addEventListener('DOMContentLoaded',function(){if(!currentSession)loadRememberedLogin()});
+  setInterval(slRenderNotifications,5000);
+})();
+</script>
+
+<script>
+// Compact 3-dot menu: Dashboard stays visible, all other menus live inside dropdown.
+(function(){
+  window.slToggleMainMenu=function(e){if(e)e.stopPropagation();const box=document.getElementById('slMenuDropdown');if(!box)return;box.classList.toggle('open');};
+  window.slCloseMainMenu=function(){const box=document.getElementById('slMenuDropdown');if(box)box.classList.remove('open');};
+  document.addEventListener('click',function(e){const nav=document.querySelector('.sl-main-nav');if(nav&&!nav.contains(e.target))slCloseMainMenu();});
+  document.addEventListener('DOMContentLoaded',function(){
+    const box=document.getElementById('slMenuDropdown');if(!box)return;
+    box.addEventListener('click',function(e){if(e.target.closest('button') && !e.target.closest('#slMenuToggle')) setTimeout(slCloseMainMenu,80);});
+  });
+})();
+</script>
+
+<script>
+(function(){
+  window.slProductSaved=function(name){
+    const m=document.getElementById('slProductSaveNotice'),msg=document.getElementById('slProductSaveMsg'),ok=document.getElementById('slProductSaveOk');
+    if(!m||!ok){alert((name?name+' — ':'')+'Product সফলভাবে Save হয়েছে।');return;}
+    msg.textContent=(name?name+' — ':'')+'Product সফলভাবে Save হয়েছে।';
+    m.classList.add('open');m.setAttribute('aria-hidden','false');
+    const close=()=>{m.classList.remove('open');m.setAttribute('aria-hidden','true');};
+    ok.onclick=close;
+  };
+})();
+</script>
+<script>
+// ===== Colorful Yes/No confirmation helper =====
+(function(){
+  window.slConfirm=function(message,onYes,title,onNo){
+    const m=document.getElementById('slConfirmModal'),msg=document.getElementById('slConfirmMsg'),ttl=document.getElementById('slConfirmTitle'),yes=document.getElementById('slConfirmYes'),no=document.getElementById('slConfirmNo');
+    if(!m||!yes||!no){if(window.confirm(message)){if(typeof onYes==='function')onYes();}else if(typeof onNo==='function')onNo();return;}
+    msg.textContent=message;ttl.textContent=title||'Confirm';m.classList.add('open');m.setAttribute('aria-hidden','false');
+    const close=()=>{m.classList.remove('open');m.setAttribute('aria-hidden','true');};
+    yes.onclick=()=>{close();if(typeof onYes==='function')onYes();};
+    no.onclick=()=>{close();if(typeof onNo==='function')onNo();};
+  };
+})();
+</script>
+
+<div id="slDatePicker" aria-hidden="true">
+  <div class="sl-date-card" role="dialog" aria-modal="true" aria-labelledby="slDateTitle">
+    <div class="sl-date-head">
+      <div id="slDateTitle" class="sl-date-title">তারিখ নির্বাচন করুন</div>
+      <div class="sl-date-nav">
+        <button type="button" id="slDatePrev" aria-label="Previous month">‹</button>
+        <div id="slDateMonth"></div>
+        <button type="button" id="slDateNext" aria-label="Next month">›</button>
+      </div>
+    </div>
+    <div class="sl-date-week"><div>সো</div><div>মো</div><div>মঙ্গল</div><div>বুধ</div><div>বৃহস্পতি</div><div>শুক্র</div><div>শনি</div></div>
+    <div id="slDateGrid" class="sl-date-grid"></div>
+    <div class="sl-date-actions">
+      <button type="button" id="slDateClear">CLEAR</button>
+      <button type="button" id="slDateCancel">CANCEL</button>
+      <button type="button" id="slDateSet">SET</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  let target=null, view=new Date(), picked='';
+  const modal=()=>document.getElementById('slDatePicker');
+  const pad=n=>String(n).padStart(2,'0');
+  const fmt=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+  const parse=v=>{if(!/^\d{4}-\d{2}-\d{2}$/.test(v))return null;const [y,m,day]=v.split('-').map(Number);const d=new Date(y,m-1,day);return d.getFullYear()===y&&d.getMonth()===m-1&&d.getDate()===day?d:null};
+  const monthName=d=>d.toLocaleDateString('en-US',{month:'long',year:'numeric'});
+  function render(){const grid=document.getElementById('slDateGrid'),title=document.getElementById('slDateMonth');if(!grid||!title)return;title.textContent=monthName(view);grid.innerHTML='';const first=new Date(view.getFullYear(),view.getMonth(),1),start=new Date(view.getFullYear(),view.getMonth(),1-first.getDay()),today=fmt(new Date());for(let i=0;i<42;i++){const d=new Date(start);d.setDate(start.getDate()+i);const b=document.createElement('button');b.type='button';b.className='sl-date-day';if(d.getMonth()!==view.getMonth())b.classList.add('other');if(fmt(d)===today)b.classList.add('today');if(fmt(d)===picked)b.classList.add('selected');b.textContent=d.getDate();b.onclick=()=>{picked=fmt(d);render();};grid.appendChild(b);}}
+  function openPicker(el){target=el;const d=parse(el.value)||new Date();picked=parse(el.value)?el.value:'';view=new Date(d.getFullYear(),d.getMonth(),1);render();const m=modal();m.classList.add('open');m.setAttribute('aria-hidden','false');}
+  function closePicker(){const m=modal();m.classList.remove('open');m.setAttribute('aria-hidden','true');target=null;}
+  document.addEventListener('DOMContentLoaded',function(){['bdDate','cbDate','cmDate'].forEach(id=>{const el=document.getElementById(id);if(el&&!el.value)el.value=today();});document.querySelectorAll('input.sl-custom-date').forEach(el=>{el.addEventListener('click',()=>openPicker(el));el.addEventListener('focus',()=>openPicker(el));});document.getElementById('slDatePrev').onclick=()=>{view.setMonth(view.getMonth()-1);render();};document.getElementById('slDateNext').onclick=()=>{view.setMonth(view.getMonth()+1);render();};document.getElementById('slDateClear').onclick=()=>{if(target){target.value='';target.dispatchEvent(new Event('input',{bubbles:true}));target.dispatchEvent(new Event('change',{bubbles:true}));}closePicker();};document.getElementById('slDateCancel').onclick=closePicker;document.getElementById('slDateSet').onclick=()=>{if(target&&picked){target.value=picked;target.dispatchEvent(new Event('input',{bubbles:true}));target.dispatchEvent(new Event('change',{bubbles:true}));}closePicker();};modal().addEventListener('click',e=>{if(e.target===modal())closePicker();});});
+})();
+</script>
+
+<script id="sl-live-datetime-script">
+(function(){
+  function updateLiveDateTime(){
+    const d=document.getElementById('slLiveDate'),t=document.getElementById('slLiveTime');
+    if(!d||!t)return;
+    const now=new Date();
+    const date=String(now.getDate()).padStart(2,'0')+'/'+String(now.getMonth()+1).padStart(2,'0')+'/'+now.getFullYear();
+    const time=now.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:true});
+    d.textContent=date; t.textContent=time;
+  }
+  document.addEventListener('DOMContentLoaded',function(){updateLiveDateTime();setInterval(updateLiveDateTime,1000);});
+})();
+</script>
+
+<script id="sl-appearance-controls">
+(function(){
+  const KEY='sl_appearance_settings',defaults={theme:'softpink',fontSize:'normal',fontFamily:'system',textTone:'dark',accent:'pink',numberSize:'normal',radius:'soft',density:'comfortable'};
+  const $=id=>document.getElementById(id),themeClass={lavender:'sl-theme-lavender',day:'sl-theme-day',night:'sl-theme-night',dark:'sl-theme-dark'},fontClass={small:'sl-font-small',normal:'sl-font-normal',large:'sl-font-large',xlarge:'sl-font-xlarge'},radiusClass={soft:'sl-radius-soft',round:'sl-radius-round',square:'sl-radius-square'},densityClass={compact:'sl-density-compact',spacious:'sl-density-spacious'},family={system:'Arial,"Noto Sans Bengali",sans-serif',bangla:'"Noto Sans Bengali",Arial,sans-serif',serif:'Georgia,"Noto Serif Bengali",serif',rounded:'Trebuchet MS,"Noto Sans Bengali",sans-serif'},accent={pink:'#e7a0b8',purple:'#c5b0e8',blue:'#9ec5e8',green:'#9bd1b0',orange:'#f0bd8b'};
+  function stored(){try{return Object.assign({},defaults,JSON.parse(localStorage.getItem(KEY)||'{}'))}catch(e){return Object.assign({},defaults)}}
+  function apply(c){const b=document.body,r=document.documentElement;Object.values(themeClass).forEach(x=>b.classList.remove(x));Object.values(fontClass).forEach(x=>b.classList.remove(x));Object.values(radiusClass).forEach(x=>b.classList.remove(x));Object.values(densityClass).forEach(x=>x&&b.classList.remove(x));if(themeClass[c.theme])b.classList.add(themeClass[c.theme]);if(fontClass[c.fontSize])b.classList.add(fontClass[c.fontSize]);if(radiusClass[c.radius])b.classList.add(radiusClass[c.radius]);if(densityClass[c.density])b.classList.add(densityClass[c.density]);
+    const dark=c.theme==='night'||c.theme==='dark',tone=c.textTone==='white'&&dark?'#f5f5f5':c.textTone==='soft'?'#3f3a3d':'#161616',a=accent[c.accent]||accent.pink,soft=dark?'#303946':c.accent==='pink'?'#fde9f0':c.accent==='purple'?'#eee8f8':c.accent==='blue'?'#eaf3fa':c.accent==='green'?'#eaf7ef':'#fff1e5';
+    r.style.setProperty('--sl-font-family',family[c.fontFamily]||family.system);r.style.setProperty('--sl-text',tone);b.style.setProperty('--sl-text',tone);r.style.setProperty('--sl-accent-main',a);b.style.setProperty('--sl-accent-main',a);r.style.setProperty('--sl-accent-soft',soft);b.style.setProperty('--sl-accent-soft',soft);r.style.setProperty('--sl-number-size',({normal:26,large:30,xlarge:34}[c.numberSize]||26)+'px');
+    ['slThemeMode','slFontSize','slFontFamily','slTextTone','slAccent','slNumberSize','slRadius','slDensity'].forEach(id=>{if($(id))$(id).value={slThemeMode:c.theme,slFontSize:c.fontSize,slFontFamily:c.fontFamily,slTextTone:c.textTone,slAccent:c.accent,slNumberSize:c.numberSize,slRadius:c.radius,slDensity:c.density}[id]});
+  }
+  function read(){return {theme:$('slThemeMode')?.value||defaults.theme,fontSize:$('slFontSize')?.value||defaults.fontSize,fontFamily:$('slFontFamily')?.value||defaults.fontFamily,textTone:$('slTextTone')?.value||defaults.textTone,accent:$('slAccent')?.value||defaults.accent,numberSize:$('slNumberSize')?.value||defaults.numberSize,radius:$('slRadius')?.value||defaults.radius,density:$('slDensity')?.value||defaults.density}}
+  window.slPreviewAppearance=()=>apply(read());window.slSetAccent=v=>{$('slAccent').value=v;apply(read())};window.saveAppearanceSettings=()=>{const c=read();localStorage.setItem(KEY,JSON.stringify(c));apply(c);if($('slAppearanceStatus'))$('slAppearanceStatus').textContent='Appearance saved successfully.'};window.resetAppearanceSettings=()=>{localStorage.removeItem(KEY);apply(defaults);if($('slAppearanceStatus'))$('slAppearanceStatus').textContent='Appearance reset to default.'};
+  document.addEventListener('DOMContentLoaded',()=>setTimeout(()=>{apply(stored());if(typeof loadBusinessSettings==='function')loadBusinessSettings()},0));
+})();
+</script>
+<style id="sl-final-readability-fix">
+.page,.page *{text-shadow:none!important}.page>h1,.page>h2,.page>h3,.page>h4,.page>h5,.page>h6,.page .card h1,.page .card h2,.page .card h3,.page .card h4,.page .card h5,.page .card h6,.page .card label,.page .card p,.page .card span,.page .card small,.page .card strong,.page .card td,.page .card th,.page .card li,.page .card legend,.page .panel h1,.page .panel h2,.page .panel h3,.page .panel h4,.page .panel h5,.page .panel h6,.page .panel label,.page .panel p,.page .panel span,.page .panel small,.page .panel strong,.page .panel td,.page .panel th,.page .panel li,.page .panel legend,.page .section-card h1,.page .section-card h2,.page .section-card h3,.page .section-card h4,.page .section-card h5,.page .section-card h6,.page .section-card label,.page .section-card p,.page .section-card span,.page .section-card small,.page .section-card strong{color:var(--sl-text,#161616)!important;opacity:1!important}.page .card input,.page .card select,.page .card textarea,.page input,.page select,.page textarea{color:var(--sl-text,#161616)!important;opacity:1!important}.page .card input::placeholder,.page .card textarea::placeholder{color:#64748b!important;opacity:1!important}.page .card .muted,.page .card .form-note,.page .card .security-note{color:var(--sl-muted,#666)!important;opacity:1!important}#settings>h2,#settings .card h3,#settings .card label,#settings .card p{color:var(--sl-text,#161616)!important;opacity:1!important}#settings .card .form-note{color:var(--sl-muted,#666)!important}#settings input,#settings textarea,#settings select{color:var(--sl-text,#161616)!important;opacity:1!important}
+</style>
+
+</body></html>
